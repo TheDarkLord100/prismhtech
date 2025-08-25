@@ -41,7 +41,7 @@ export default function CompanyIntro() {
       {/* Right Image Section */}
       <div className="flex justify-center drop-shadow-xl">
         <Image
-          src="/Assets/category1.png"
+          src="/Assets/Category1.png"
           alt="Company"
           width={500}
           height={400}
