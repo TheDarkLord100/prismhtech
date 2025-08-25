@@ -1,22 +1,33 @@
 @import "tailwindcss";
 
+/* Default (light theme) */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --title-bg: #ffffef;
+  --title-text: #8A38F5;
+}
+
+/* Dark theme override */
+.dark {
+  --background: #2c2c2c;
+  --foreground: #ededed;
+  --title-bg: #2c2c2c;
+  --title-text: #8A38F5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-footer-bg: var(--background);
+  --color-footer-text: var(--foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-title-bg: var(--title-bg);
+  --color-title-text: var(--title-text);
 }
 
 body {

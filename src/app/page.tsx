@@ -8,7 +8,7 @@ import SectionHeader from "@/components/SectionHeader";
 
 export default function HomePage() {
   return (
-    <main className="bg-gray-900 text-white">
+    <main className="bg-var[--title-bg] text-white">
       <Navbar />
       <HeroSlider />
       <CompanyIntro />
