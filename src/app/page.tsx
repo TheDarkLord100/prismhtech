@@ -5,12 +5,14 @@ import CategoryCard from "@/components/CategoryCard";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import SectionHeader from "@/components/SectionHeader";
+import PartnerSlider from "@/components/PartnerSlider";
 
 export default function HomePage() {
   return (
     <main className="bg-var[--title-bg] text-white">
       <Navbar />
       <HeroSlider />
+      <PartnerSlider />
       <CompanyIntro />
 
       <section className="max-w-7xl mx-auto py-12 px-4">
