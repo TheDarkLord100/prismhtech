@@ -6,6 +6,9 @@ import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import SectionHeader from "@/components/SectionHeader";
 import PartnerSlider from "@/components/PartnerSlider";
+import ProductsSlider from "@/components/ProductsSlider";
+import MemorialSecetion from "@/components/MemorialSection";
+
 
 export default function HomePage() {
   return (
@@ -13,6 +16,8 @@ export default function HomePage() {
       <Navbar />
       <HeroSlider />
       <PartnerSlider />
+      <ProductsSlider />
+      <MemorialSecetion />
       <CompanyIntro />
 
       <section className="max-w-7xl mx-auto py-12 px-4">
