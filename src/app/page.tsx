@@ -17,6 +17,7 @@ export default function HomePage() {
       <HeroSlider />
       <PartnerSlider />
       <ProductsSlider />
+      <ProductCard />
       <MemorialSecetion />
       <CompanyIntro />
 
