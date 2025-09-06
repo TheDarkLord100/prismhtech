@@ -28,7 +28,7 @@ export default function HeroSlider() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -38,13 +38,12 @@ export default function HeroSlider() {
     setCurrent((prev) => (prev + 1) % slides.length);
 
   return (
-    <section className="relative h-[500px] w-full overflow-hidden">
+    <section className="relative h-[100vh] w-full overflow-hidden">
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-            index === current ? "opacity-100 z-10" : "opacity-0 z-0"
-          }`}
+          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === current ? "opacity-100 z-10" : "opacity-0 z-0"
+            }`}
         >
           {/* Container MUST be relative for next/image fill */}
           <div className="relative w-full h-full">
@@ -58,14 +57,28 @@ export default function HeroSlider() {
             <div className="absolute inset-0 bg-black/40" />
 
 
-            <div className="absolute bottom-10 left-10 text-left">
-              <div className="inline-block bg-[var(--title-bg)] px-10 py-4 rounded-xl">
-                <h1 className="text-5xl font-bold text-[var(--title-text)] drop-shadow-lg">
+            <div className="absolute bottom-20 left-20 text-left">
+              <div className="inline-block px-10 py-6 rounded-2xl 
+                  bg-white/2 backdrop-blur shadow-lg border-t border-b border-white/30">
+                <h3 className="text-2xl font-regular text-white-400 drop-shadow-lg">
+                  {slide.title}
+                </h3>
+                <h1 className="text-5xl font-bold italic text-yellow-400 drop-shadow-lg">
                   {slide.title}
                 </h1>
+
+                <p className="text-lg mt-16 text-white drop-shadow-md">
+                  {slide.subtitle}
+                </p>
+
+                {/* CTA link */}
+                <button className="mt-6 flex items-center gap-2 text-white/90 hover:text-white transition">
+                  <span className="block w-8 h-[1px] bg-white/60" />
+                  <span className="text-base tracking-wide">Discover</span>
+                </button>
               </div>
-              <p className="text-lg mt-4 text-white drop-shadow-md">{slide.subtitle}</p>
             </div>
+
           </div>
         </div>
       ))}
@@ -90,9 +103,8 @@ export default function HeroSlider() {
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
-              current === index ? "bg-orange-400" : "bg-white/50"
-            }`}
+            className={`w-3 h-3 rounded-full transition-all ${current === index ? "bg-orange-400" : "bg-white/50"
+              }`}
           />
         ))}
       </div>
