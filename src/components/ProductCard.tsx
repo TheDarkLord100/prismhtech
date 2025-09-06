@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import Navbar from "./Navbar";
 
 export default function ProductCard() {
   const [qty, setQty] = useState(2);
@@ -9,6 +10,8 @@ export default function ProductCard() {
   const total = (qty * pricePerKg).toFixed(1);
 
   return (
+    <>
+    <Navbar />
     <div className="bg-[#FFFAED] rounded-3xl shadow-lg overflow-hidden w-[280px]">
       {/* Image Section */}
       <div className="px-3 pt-3 pb-1"> {/* reduced bottom gap */}
@@ -64,5 +67,6 @@ export default function ProductCard() {
         </div>
       </div>
     </div>
+    </>
   );
 }
