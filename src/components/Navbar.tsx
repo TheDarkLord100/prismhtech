@@ -53,16 +53,21 @@ export default function Navbar() {
             {/* Desktop menu */}
             <div className="hidden md:flex items-center gap-16">
               <Link href="/">Home</Link>
-              <Link href="/products">Products</Link>
+              <Link href="/Products">Products</Link>
               <Link href="/blogs">Blogs</Link>
               <Link href="/about">About Us</Link>
               <Link href="/contact">Contact Us</Link>
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-              <ShoppingCart className="w-5 h-5 cursor-pointer" />
-              <Link href="/login"><User className="w-5 h-5 cursor-pointer" /></Link>
-            </div>
+  <Link href="/Cart">
+    <ShoppingCart className="w-5 h-5 cursor-pointer" />
+  </Link>
+  <Link href="/login">
+    <User className="w-5 h-5 cursor-pointer" />
+  </Link>
+</div>
+
 
             {/* Mobile toggle */}
             <button
