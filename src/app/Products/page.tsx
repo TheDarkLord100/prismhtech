@@ -47,7 +47,7 @@ export default function ProductsPage() {
 
   // Sorting logic
   const handleSort = (type: string) => {
-    let sorted = [...products];
+    const sorted = [...products];
     if (type === "high-to-low") {
       sorted.sort((a, b) => b.price - a.price);
     } else if (type === "low-to-high") {

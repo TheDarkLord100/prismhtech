@@ -18,12 +18,19 @@ export default function ProductCard({ name, price, img }: ProductCardProps) {
       {/* Image Section */}
       <div className="px-3 pt-3 pb-1">
         <div className="relative w-full h-[200px]">
-          <Image
-            src={img}
-            alt={name}
-            fill
-            className="object-cover rounded-xl"
-          />
+          {img ? (
+  <Image
+    src={img}
+    alt={name}
+    fill
+    className="object-cover rounded-xl"
+  />
+) : (
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-xl">
+    <span className="text-gray-500">No Image</span>
+  </div>
+)}
+
         </div>
       </div>
 
@@ -42,14 +49,14 @@ export default function ProductCard({ name, price, img }: ProductCardProps) {
 
         {/* Right: Qty + Total */}
         <div className="w-[40%] px-2 py-2 flex flex-col justify-center items-center">
-          <div className="flex items-center bg-purple-600 rounded-md overflow-hidden">
+          <div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
               className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
             >
               -
             </button>
-            <span className="w-9 h-[22px] flex items-center justify-center bg-white text-purple-600 font-semibold text-sm select-none">
+            <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none">
               {qty}
             </span>
             <button
