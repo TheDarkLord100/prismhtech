@@ -5,30 +5,64 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
-export default function CartPage() {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Aluminum Scrap",
-      price: 23.6,
-      unit: "per Kg",
-      qty: 2,
-      img: "/partners/partner.png",
-      delivery: "Tomorrow, 28 Aug",
-      checked: true,
-    },
-    {
-      id: 2,
-      name: "Gold Scrap",
-      price: 27.6,
-      unit: "per Kg",
-      qty: 2,
-      img: "/partners/partner.png",
-      delivery: "Tomorrow, 28 Aug",
-      checked: false,
-    },
-  ]);
+// Mock Data (can be replaced with API later)
+const cartData = [
+  {
+    id: 1,
+    name: "Aluminum Scrap",
+    price: 23.6,
+    unit: "per Kg",
+    qty: 2,
+    img: "/partners/partner.png",
+    delivery: "Tomorrow, 28 Aug",
+    checked: true,
+  },
+  {
+    id: 2,
+    name: "Gold Scrap",
+    price: 27.6,
+    unit: "per Kg",
+    qty: 2,
+    img: "/partners/partner.png",
+    delivery: "Tomorrow, 28 Aug",
+    checked: false,
+  },
+];
 
+const savedData = [
+  {
+    id: 101,
+    name: "Copper Scrap",
+    price: 19.5,
+    unit: "per Kg",
+    img: "/partners/partner.png",
+  },
+  {
+    id: 102,
+    name: "Iron Scrap",
+    price: 15.0,
+    unit: "per Kg",
+    img: "/partners/partner.png",
+  },
+  {
+    id: 103,
+    name: "Brass Scrap",
+    price: 30.2,
+    unit: "per Kg",
+    img: "/partners/partner.png",
+  },
+];
+
+export default function CartPage() {
+  const [items, setItems] = useState(cartData);
+  const [savedItems, setSavedItems] = useState(savedData);
+
+  // ✅ Total quantity (sum of qty of all checked items)
+  const totalQuantity = items
+    .filter((item) => item.checked)
+    .reduce((acc, item) => acc + item.qty, 0);
+
+  // ✅ Subtotal (sum of price * qty of all checked items)
   const subtotal = items
     .filter((item) => item.checked)
     .reduce((acc, item) => acc + item.price * item.qty, 0);
@@ -42,7 +76,6 @@ export default function CartPage() {
           <div className="flex-1 flex flex-col gap-6">
             {/* Cart Section */}
             <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
-              {/* Main Heading */}
               <h2 className="text-4xl font-bold mb-3">Your Cart</h2>
 
               {/* Row: Select All + Price */}
@@ -101,7 +134,6 @@ export default function CartPage() {
 
                         {/* Quantity & Actions */}
                         <div className="flex items-center gap-3 mt-2 text-xs text-gray-600 flex-wrap">
-                          {/* Quantity Control (Smaller) */}
                           <div className="flex items-center border border-purple-500 rounded-full px-2 py-0.5 gap-2">
                             {/* Decrement / Trash */}
                             <button
@@ -150,9 +182,29 @@ export default function CartPage() {
                             </button>
                           </div>
 
-                          {/* Actions with separators */}
+                          {/* Actions */}
                           <span className="text-gray-400">|</span>
-                          <span className="cursor-pointer">Save for later</span>
+                          <span
+                            className="cursor-pointer"
+                            onClick={() => {
+                              // Move item from cart to savedItems
+                              setSavedItems((prev) => [
+                                ...prev,
+                                {
+                                  id: Date.now(), // new id
+                                  name: item.name,
+                                  price: item.price,
+                                  unit: item.unit,
+                                  img: item.img,
+                                },
+                              ]);
+                              setItems((prev) =>
+                                prev.filter((it) => it.id !== item.id)
+                              );
+                            }}
+                          >
+                            Add to list
+                          </span>
                           <span className="text-gray-400">|</span>
                           <span className="cursor-pointer">
                             See more like this
@@ -163,7 +215,7 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    {/* Right Section Price (aligned with delivery text) */}
+                    {/* Right Section Price */}
                     <div className="flex items-end pb-1">
                       <p className="text-lg font-semibold whitespace-nowrap mt-6">
                         ₹ {item.price} {item.unit}
@@ -176,7 +228,7 @@ export default function CartPage() {
               {/* Subtotal */}
               <div className="flex justify-end border-t border-gray-300 pt-4 mt-4">
                 <p className="text-lg font-semibold">
-                  Subtotal ({items.filter((i) => i.checked).length} items) :{" "}
+                  Subtotal ({totalQuantity} items) :{" "}
                   <span className="font-bold">${subtotal.toFixed(1)}</span>
                 </p>
               </div>
@@ -184,37 +236,74 @@ export default function CartPage() {
 
             {/* Your Items Section */}
             <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
-              <h2 className="text-2xl font-semibold mb-4">Your Items</h2>
-              <div className="flex justify-between text-sm text-blue-600 mb-4">
-                <p>Select all items (3 items)</p>
-                <p>Buy it again</p>
+              <h2 className="text-4xl font-bold mb-3">Your Items</h2>
+
+              {/* Tabs Row */}
+              <div className="flex items-center gap-10 border-b border-gray-300 pb-2">
+                <p className="text-lg font-semibold text-green-600 cursor-pointer border-b-2 border-green-600">
+                  Select all items ({savedItems.length} items)
+                </p>
+                <p className="text-lg text-gray-600 cursor-pointer">
+                  Buy it again
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
+              {/* Item Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+                {savedItems.map((item) => (
                   <div
-                    key={i}
-                    className="border rounded-xl p-3 flex flex-col items-center bg-white shadow-sm"
+                    key={item.id}
+                    className="bg-[#FFFAED] border rounded-2xl shadow-md p-4 flex flex-col items-start"
                   >
-                    <div className="relative w-full h-40 rounded-md overflow-hidden">
+                    <div className="relative w-full h-52 rounded-xl overflow-hidden">
                       <Image
-                        src="/partners/partner.png"
-                        alt="Aluminum Scrap"
+                        src={item.img}
+                        alt={item.name}
                         fill
                         className="object-cover"
                       />
                     </div>
-                    <h3 className="mt-2 font-medium">Aluminum Scrap</h3>
-                    <p className="text-sm">₹ 23.6 per Kg</p>
-                    <button className="mt-2 border border-purple-600 text-purple-600 px-4 py-1 rounded-md text-sm">
+
+                    <h3 className="mt-3 text-gray-800 font-medium">
+                      {item.name}
+                    </h3>
+                    <p className="text-gray-700 text-base font-semibold">
+                      ₹ {item.price} {item.unit}
+                    </p>
+
+                    <button
+                      className="mt-3 border border-yellow-500 text-yellow-600 px-6 py-1.5 rounded-full text-sm font-medium hover:bg-yellow-50"
+                      onClick={() => {
+                        // Move to cart
+                        setItems((prev) => [
+                          ...prev,
+                          {
+                            ...item,
+                            qty: 1,
+                            delivery: "Tomorrow, 28 Aug",
+                            checked: true,
+                          },
+                        ]);
+                        setSavedItems((prev) =>
+                          prev.filter((it) => it.id !== item.id)
+                        );
+                      }}
+                    >
                       Move to cart
                     </button>
-                    <div className="mt-2 text-xs text-gray-600 flex flex-col gap-1">
-                      <span className="cursor-pointer">Delete</span>
-                      <span className="cursor-pointer">Add to list</span>
-                      <span className="cursor-pointer">
-                        See more like this
+
+                    <div className="mt-3 text-sm text-blue-600 flex flex-col gap-1">
+                      <span
+                        className="cursor-pointer"
+                        onClick={() =>
+                          setSavedItems((prev) =>
+                            prev.filter((it) => it.id !== item.id)
+                          )
+                        }
+                      >
+                        Delete
                       </span>
+                      <span className="cursor-pointer">See more like this</span>
                     </div>
                   </div>
                 ))}
@@ -223,19 +312,23 @@ export default function CartPage() {
           </div>
 
           {/* RIGHT SIDE (Subtotal Box) */}
-          <aside className="bg-[#FFFAED] w-full lg:w-80 rounded-2xl shadow-md p-6 h-fit sticky top-6">
-            <p className="font-semibold mb-4">
-              Subtotal ({items.filter((i) => i.checked).length} items) : $
-              {subtotal.toFixed(1)}
-            </p>
-            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-medium">
-              Proceed to Buy
-            </button>
-            <select className="w-full mt-4 border rounded-md px-3 py-2">
-              <option>EMI Available</option>
-              <option>No EMI</option>
-            </select>
-          </aside>
+          <aside className="bg-[#FFFDEE] w-full lg:w-80 rounded-2xl shadow-md p-6 h-fit sticky top-6">
+  <p className="text-lg font-semibold mb-4">
+    Subtotal ({totalQuantity} items) :{" "}
+    <span className="font-bold text-xl">${subtotal.toFixed(1)}</span>
+  </p>
+  <br />
+
+  <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-white py-3 rounded-4xl font-medium text-lg">
+    Proceed to Buy
+  </button>
+
+  <select className="w-full mt-4 border border-yellow-400 rounded-xl px-3 py-3 text-base">
+    <option>EMI Available</option>
+    <option>No EMI</option>
+  </select>
+</aside>
+
         </div>
       </main>
     </>
