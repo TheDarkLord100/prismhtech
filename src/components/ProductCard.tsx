@@ -2,60 +2,66 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import Navbar from "./Navbar";
 
-export default function ProductCard() {
-  const [qty, setQty] = useState(2);
-  const pricePerKg = 23.6;
-  const total = (qty * pricePerKg).toFixed(1);
+type ProductCardProps = {
+  name: string;
+  price: number;
+  img: string;
+};
+
+export default function ProductCard({ name, price, img }: ProductCardProps) {
+  const [qty, setQty] = useState(1);
+  const total = (qty * price).toFixed(1);
 
   return (
-    <>
-    <Navbar />
     <div className="bg-[#FFFAED] rounded-3xl shadow-lg overflow-hidden w-[280px]">
       {/* Image Section */}
-      <div className="px-3 pt-3 pb-1"> {/* reduced bottom gap */}
+      <div className="px-3 pt-3 pb-1">
         <div className="relative w-full h-[200px]">
-          <Image
-            src="/Assets/category1.png"
-            alt="Aluminum Scrap"
-            fill
-            className="object-cover rounded-xl"
-          />
+          {img ? (
+  <Image
+    src={img}
+    alt={name}
+    fill
+    className="object-cover rounded-xl"
+  />
+) : (
+  <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-xl">
+    <span className="text-gray-500">No Image</span>
+  </div>
+)}
+
         </div>
       </div>
 
       {/* Description */}
       <div className="flex h-[85px]">
-        {/* Left: Title + Price (bigger width) */}
+        {/* Left: Title + Price */}
         <div className="w-[60%] px-3 py-2 flex flex-col justify-center">
-          <h3 className="text-gray-800 text-sm font-medium">Aluminum Scrap</h3>
-          <p className="text-gray-900 text-lg font-bold mt-1">  {/* bigger text */}
-            ₹ {pricePerKg} per Kg
+          <h3 className="text-gray-800 text-sm font-medium">{name}</h3>
+          <p className="text-gray-900 text-lg font-bold mt-1">
+            ₹ {price} per Kg
           </p>
         </div>
 
         {/* Divider */}
         <div className="w-px bg-gray-300" />
 
-        {/* Right: Qty + Total (smaller width) */}
+        {/* Right: Qty + Total */}
         <div className="w-[40%] px-2 py-2 flex flex-col justify-center items-center">
-          {/* Incremental - compact */}
-          <div className="flex items-center bg-purple-600 rounded-md overflow-hidden">
+          <div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="w-6 h-6 flex items-center justify-center text-white font-bold leading-none text-sm"
-              aria-label="Decrease quantity"
+              className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
             >
               -
             </button>
-            <span className="w-9 h-[22px] flex items-center justify-center bg-white text-purple-600 font-semibold leading-none text-sm select-none">
+            <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none">
               {qty}
             </span>
             <button
               onClick={() => setQty((q) => q + 1)}
-              className="w-6 h-6 flex items-center justify-center text-white font-bold leading-none text-sm"
-              aria-label="Increase quantity"
+              className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
             >
               +
             </button>
@@ -67,6 +73,5 @@ export default function ProductCard() {
         </div>
       </div>
     </div>
-    </>
   );
 }
