@@ -17,28 +17,8 @@ export default function HomePage() {
       <HeroSlider />
       <PartnerSlider />
       <ProductsSlider />
-      <ProductCard />
       <MemorialSecetion />
       <CompanyIntro />
-
-      <section className="max-w-7xl mx-auto py-12 px-4">
-        <SectionHeader title="Categories" buttonText="View all products" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <CategoryCard title="Electroplating" imgSrc="/Assets/category1.png" />
-          <CategoryCard title="Metals" imgSrc="/Assets/category1.png" />
-          <CategoryCard title="Specialty Chemicals" imgSrc="/Assets/category1.png" />
-        </div>
-      </section>
-
-      <section className="max-w-7xl mx-auto py-12 px-4">
-        <SectionHeader title="Our Products" buttonText="View all products" />
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-        </div>
-      </section>
-
       <Footer />
     </main>
   );

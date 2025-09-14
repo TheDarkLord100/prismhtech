@@ -27,6 +27,7 @@ export default function ProductsPage() {
         const res = await fetch("/api/products", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
+        console.log(data)
         setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
