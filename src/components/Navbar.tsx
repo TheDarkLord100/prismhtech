@@ -39,7 +39,7 @@ export default function Navbar() {
 
         {/* Navbar content above the blur */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-16 items-center justify-between text-white">
             {/* Logo */}
             <Link href="/" className="flex h-full items-center py-1.5">
               <Image
