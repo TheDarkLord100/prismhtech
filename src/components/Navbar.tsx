@@ -10,16 +10,14 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // lock background scroll when menu is open
+  // Hide on scroll down, show on scroll up
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
 
       if (currentY > lastScrollY && currentY > 50) {
-        // scrolling down
         setHidden(true);
       } else {
-        // scrolling up
         setHidden(false);
       }
 
@@ -33,12 +31,16 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed inset-x-0 top-0 z-50 bg-transparent backdrop-blur-md transition-transform duration-300
-          ${hidden ? "-translate-y-full" : "translate-y-0"}`}
+        className={`fixed inset-x-0 top-0 z-50 transition-transform duration-300
+    ${hidden ? "-translate-y-full" : "translate-y-0"}`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Frosted background behind everything */}
+        <div className="absolute inset-0 bg-transparent backdrop-blur-md z-0" />
+
+        {/* Navbar content above the blur */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            {/* Logo with slight vertical padding */}
+            {/* Logo */}
             <Link href="/" className="flex h-full items-center py-1.5">
               <Image
                 src="/Assets/Logo.png"
@@ -59,42 +61,43 @@ export default function Navbar() {
               <Link href="/contact">Contact Us</Link>
             </div>
 
+            {/* Desktop icons */}
             <div className="hidden md:flex items-center gap-8">
-  <Link href="/Cart">
-    <ShoppingCart className="w-5 h-5 cursor-pointer" />
-  </Link>
-  <Link href="/login">
-    <User className="w-5 h-5 cursor-pointer" />
-  </Link>
-</div>
-
+              <Link href="/Cart">
+                <ShoppingCart className="w-5 h-5 cursor-pointer" />
+              </Link>
+              <Link href="/login">
+                <User className="w-5 h-5 cursor-pointer" />
+              </Link>
+            </div>
 
             {/* Mobile toggle */}
             <button
               onClick={() => setOpen(v => !v)}
-              className="md:hidden p-2 rounded-lg"
+              className="md:hidden p-2 rounded-lg relative z-20"
               aria-expanded={open}
               aria-label="Toggle menu"
             >
-              {open ? <></> : <Menu />}
+              {open ? null : <Menu />}
             </button>
           </div>
         </div>
       </nav>
 
+
       {/* Mobile full-screen overlay */}
       <div
         aria-hidden={!open}
         className={`fixed inset-0 z-[60] md:hidden transition-all duration-300 ease-out
-              ${open ? "translate-x-0 opacity-100 pointer-events-auto" : "translate-x-full opacity-0 pointer-events-none"}`}
+          ${open ? "translate-x-0 opacity-100 pointer-events-auto" : "translate-x-full opacity-0 pointer-events-none"}`}
       >
         {/* Frosted white background */}
-        <div className="absolute inset-0 bg-white/40 backdrop-blur-xl pointer-events-none" />
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-xl" />
 
         {/* Close button */}
         <button
           onClick={() => setOpen(false)}
-          className="absolute top-4 right-4 p-2 rounded-lg bg-white/60 backdrop-blur-md hover:bg-white/80 transition z-50 pointer-events-auto"
+          className="absolute top-4 right-4 p-2 rounded-lg bg-white/60 backdrop-blur-md hover:bg-white/80 transition z-50"
           aria-label="Close menu"
         >
           <X className="w-6 h-6 text-black" />
@@ -116,7 +119,6 @@ export default function Navbar() {
           </nav>
         </div>
       </div>
-
     </>
   );
 }

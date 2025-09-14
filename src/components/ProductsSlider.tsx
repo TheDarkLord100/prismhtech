@@ -76,9 +76,14 @@ const partners: Partner[] = [
 
 export default function PartnerSlider() {
   return (
-    <div className="w-full py-20 px-8 bg-gradient-to-r from-green-900 via-green-800 to-green-700">
+    <div className="w-full py-20 px-8 bg-transparent">
       <div className="flex flex-col md:flex-row items-start justify-between gap-12 max-w-7xl mx-auto">
-        
+        <div className="md:w-1/3">
+          <h3 className="text-white text-lg uppercase tracking-widest">Our</h3>
+          <h2 className="text-5xl font-bold text-yellow-400 leading-tight">
+            OFFERED <br /> PRODUCTS
+          </h2>
+        </div>
         {/* Slider on Left Side */}
         <div className="md:w-2/3 w-full">
           <Swiper
@@ -129,12 +134,7 @@ export default function PartnerSlider() {
         </div>
 
         {/* Static Section on Right Side */}
-        <div className="md:w-1/3">
-          <h3 className="text-white text-lg uppercase tracking-widest">Our</h3>
-          <h2 className="text-5xl font-bold text-yellow-400 leading-tight">
-            OFFERED <br /> PRODUCTS
-          </h2>
-        </div>
+        
       </div>
     </div>
   );

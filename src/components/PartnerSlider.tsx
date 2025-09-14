@@ -76,7 +76,7 @@ const partners: Partner[] = [
 
 export default function PartnerSlider() {
   return (
-    <div className="w-full py-20 px-8 bg-gradient-to-r from-green-900 via-green-800 to-green-700">
+    <div className="w-full py-20 px-8 bg-transparent">
       <div className="flex flex-col md:flex-row items-start justify-between gap-12 max-w-7xl mx-auto">
         
         {/* Left Section */}

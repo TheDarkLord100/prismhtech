@@ -1,24 +1,19 @@
 import Navbar from "@/components/Navbar";
 import HeroSlider from "@/components/HeroSlider";
-import CompanyIntro from "@/components/CompanyIntro";
-import CategoryCard from "@/components/CategoryCard";
-import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
-import SectionHeader from "@/components/SectionHeader";
 import PartnerSlider from "@/components/PartnerSlider";
 import ProductsSlider from "@/components/ProductsSlider";
-import MemorialSecetion from "@/components/MemorialSection";
+import MemorialSection from "@/components/MemorialSection";
 
 
 export default function HomePage() {
   return (
-    <main className="bg-var[--title-bg] text-white">
+    <main className="bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50] text-white">
       <Navbar />
       <HeroSlider />
-      <PartnerSlider />
+      {/* <PartnerSlider /> */}
       <ProductsSlider />
-      <MemorialSecetion />
-      <CompanyIntro />
+      <MemorialSection />
       <Footer />
     </main>
   );

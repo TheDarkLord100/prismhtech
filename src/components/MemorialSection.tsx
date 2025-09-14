@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function MemorialSection() {
   return (
-    <section className="w-full bg-gradient-to-r from-green-900 via-green-800 to-green-700 pt-8 pb-16 px-4">
+    <section className="w-full bg-transparent pt-8 pb-16 px-4">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center md:items-center gap-12">
         
         {/* Left Text Section */}

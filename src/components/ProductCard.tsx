@@ -14,8 +14,8 @@ export default function ProductCard({ name, price, img }: ProductCardProps) {
   const total = (qty * price).toFixed(1);
 
   return (
+    <>
     <div className="bg-[#FFFAED] rounded-3xl shadow-lg overflow-hidden w-[280px]">
-      {/* Image Section */}
       <div className="px-3 pt-3 pb-1">
         <div className="relative w-full h-[200px]">
           {img ? (
@@ -34,7 +34,6 @@ export default function ProductCard({ name, price, img }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Description */}
       <div className="flex h-[85px]">
         {/* Left: Title + Price */}
         <div className="w-[60%] px-3 py-2 flex flex-col justify-center">
@@ -44,7 +43,7 @@ export default function ProductCard({ name, price, img }: ProductCardProps) {
           </p>
         </div>
 
-        {/* Divider */}
+     
         <div className="w-px bg-gray-300" />
 
         {/* Right: Qty + Total */}
@@ -73,5 +72,6 @@ export default function ProductCard({ name, price, img }: ProductCardProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
