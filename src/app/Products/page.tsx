@@ -4,24 +4,37 @@ import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState, useRef } from "react";
 
-// Mock products list (temporary until backend API is connected)
-const mockProducts = [
-  { id: 1, name: "Aluminum Scrap", price: 23.6, img: "/Assets/category1.png" },
-  { id: 2, name: "Copper Scrap", price: 45.2, img: "/Assets/category2.png" },
-  { id: 3, name: "Iron Scrap", price: 18.5, img: "/Assets/category3.png" },
-  { id: 4, name: "Iron Scraper", price: 23.9, img: "/Assets/category3.png" },
-  { id: 5, name: "Gold Scrap", price: 11.5, img: "/Assets/category3.png" },
-  { id: 6, name: "Brass Scrap", price: 8.5, img: "/Assets/category3.png" },
-  { id: 7, name: "Iron Foil", price: 88.0, img: "/Assets/category3.png" },
-  { id: 8, name: "Bunny", price: 45.2, img: "/Assets/category3.png" },
-  { id: 9, name: "Plastic bag", price: 1.1, img: "/Assets/category3.png" },
-];
+// Type for products (basic version)
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  description?: string;
+  priceType?: "fixed" | "variable";
+};
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<string | null>(null); // <-- Track selected sort
+  const [selectedSort, setSelectedSort] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+        console.log(data)
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -60,7 +73,7 @@ export default function ProductsPage() {
       console.log("Sort by discount");
     }
     setProducts(sorted);
-    setSelectedSort(type); // <-- Save selected sort option
+    setSelectedSort(type);
     setShowSortMenu(false);
   };
 
@@ -190,7 +203,11 @@ export default function ProductsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-0 max-w-7xl w-full px-2 sm:px-4">
             {products.map((p) => (
               <div key={p.id} className="flex justify-center">
-                <ProductCard name={p.name} price={p.price} img={p.img} />
+                <ProductCard
+                  name={p.name}
+                  price={p.price}
+                  img={p.images?.[0] || "/Assets/category1.png"} // fallback
+                />
               </div>
             ))}
           </div>
