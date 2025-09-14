@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -47,9 +48,9 @@ export default function LoginPage() {
   };
 
   return (
-    <>
+    <div className="bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50]">
       <Navbar />
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50] px-4">
+      <main className="flex min-h-screen items-center justify-center px-4">
         <div className="relative w-full max-w-md rounded-2xl bg-[#FFFFEF] p-10 shadow-[0px_0px_25px_5px_rgba(0,0,0,0.5)]">
           {/* Heading */}
           <h1 className="mb-8 text-3xl font-bold text-[#16463B]">Sign in</h1>
@@ -151,12 +152,12 @@ export default function LoginPage() {
             </button>
 
             {/* Apple */}
-            <button 
-          type="button"
-            onClick={() => router.push("/SignUp")}
-          className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] font hover:bg-gray-300 transition">
-            <span>Create a new Account</span>
-            {/* <svg
+            <button
+              type="button"
+              onClick={() => router.push("/signup")}
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] font hover:bg-gray-300 transition">
+              <span>Create a new Account</span>
+              {/* <svg
               className="h-5 w-5"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 384 512"
@@ -166,10 +167,11 @@ export default function LoginPage() {
                 d="M318.7 268.7c-.3-36.7 16-64.4 50.2-84.8-19.2-27.9-48.3-43.3-85.5-46.3-35.9-2.9-75.4 20.8-89.4 20.8-14.5 0-47.6-19.9-73.8-19.4-38.1.6-73.6 22.2-92.9 56.4-39.8 68.9-10.2 170.8 28.6 226.8 19 27.7 41.6 58.6 71.3 57.5 28.5-1.1 39.2-18.5 73.5-18.5 34.1 0 44 18.5 73.9 18 30.4-.5 49.5-27.7 68.3-55.4 21.6-31.7 30.5-62.5 30.8-64.1-0.7-0.3-59-22.6-59.2-89zM255.9 81.4c18-21.8 30.1-52.2 26.8-81.4-25.9 1-57.3 17.3-75.9 39-16.7 19.4-31.4 50.7-27.5 80.6 29.1 2.2 58.6-16.5 76.6-38.2z"
               />
             </svg> */}
-          </button>
+            </button>
           </div>
         </div>
       </main>
-    </>
+      <Footer />
+    </div>
   );
 }
