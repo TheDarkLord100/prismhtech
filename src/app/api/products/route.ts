@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { cookies } from "next/headers";
 import { createClient } from "../../../utils/supabase/server"; 
 
+// CREATE Product
 export async function POST(req: Request) {
   try {
     const supabase = createClient(cookies());
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
   }
 }
 
+// GET All Products
 export async function GET() {
   try {
     const supabase = createClient(cookies());
