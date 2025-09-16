@@ -3,8 +3,9 @@
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link"; // ✅ For navigation
 
-// Type for products (basic version)
+// Type for products
 type Product = {
   id: string;
   name: string;
@@ -18,19 +19,22 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // ✅ Loader state
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         const res = await fetch("/api/products", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
-        console.log(data)
         setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -200,17 +204,27 @@ export default function ProductsPage() {
 
         {/* Product Grid */}
         <div className="flex justify-center">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-0 max-w-7xl w-full px-2 sm:px-4">
-            {products.map((p) => (
-              <div key={p.id} className="flex justify-center">
-                <ProductCard
-                  name={p.name}
-                  price={p.price}
-                  img={p.images?.[0] || "/Assets/category1.png"} // fallback
-                />
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            // ✅ Built-in loader
+            <div className="flex justify-center items-center h-40 w-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-0 max-w-7xl w-full px-2 sm:px-4">
+              {products.map((p) => (
+                <div key={p.id} className="flex justify-center">
+                  {/* ✅ Wrap ProductCard with Link */}
+                  <Link href={`/ProductDetails/${p.id}`} className="block w-full">
+                    <ProductCard
+                      name={p.name}
+                      price={p.price}
+                      img={p.images?.[0] || "/Assets/category1.png"}
+                    />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </>

@@ -1,43 +1,54 @@
+// app/ProductDetails/[id]/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react"; // ✅ use() to unwrap params
 import Image from "next/image";
-import { useParams } from "next/navigation";
-import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
+import ProductCard from "@/components/ProductCard"; // ✅ Reuse ProductCard
 
 type Product = {
   id: string;
   name: string;
   price: number;
-  images?: string[];
   description?: string;
+  images?: string[] | null;
 };
 
-export default function ProductDetailsPage() {
-  const { id } = useParams(); // ✅ dynamic id from route
+export default function ProductDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // ✅ unwrap params
+  const { id } = use(params);
+
   const [mainProduct, setMainProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
 
-  // Fetch product details
   useEffect(() => {
-    const fetchProduct = async () => {
+    async function fetchProduct() {
       try {
-        const res = await fetch(`/api/products`, { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to fetch products");
-
-        const allProducts: Product[] = await res.json();
-        const product = allProducts.find((p) => p.id === id) || null;
-
+        const res = await fetch(`/api/products/${id}`);
+        const product = await res.json();
         setMainProduct(product);
-        setRelatedProducts(allProducts.filter((p) => p.id !== id).slice(0, 3));
       } catch (error) {
         console.error("Error fetching product:", error);
       }
-    };
+    }
 
-    if (id) fetchProduct();
+    async function fetchAllProducts() {
+      try {
+        const res = await fetch(`/api/products`);
+        const products = await res.json();
+        setRelatedProducts(products.filter((p: Product) => p.id !== id));
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    }
+
+    fetchProduct();
+    fetchAllProducts();
   }, [id]);
 
   if (!mainProduct) return null;
@@ -105,7 +116,7 @@ export default function ProductDetailsPage() {
                   >
                     <Image
                       src={img}
-                      alt={`${mainProduct.name} thumbnail ${idx}`}
+                      alt={`${mainProduct.name} thumbnail`}
                       fill
                       className="object-cover"
                     />
@@ -123,20 +134,18 @@ export default function ProductDetailsPage() {
               ₹ {mainProduct.price} per Kg
             </p>
 
-            {/* Incremental Quantity UI */}
+            {/* Quantity Increment UI */}
             <div className="flex flex-col justify-start items-start">
-              <div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden ">
+              <div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
                 >
                   -
                 </button>
-
                 <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none mx-2">
                   {quantity}
                 </span>
-
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
                   className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
@@ -144,9 +153,9 @@ export default function ProductDetailsPage() {
                   +
                 </button>
               </div>
-
               <p className="text-gray-500 text-s mt-1">
-                Total: <span className="font-semibold text-gray-500">₹ {total}</span>
+                Total:{" "}
+                <span className="font-semibold text-gray-500">₹ {total}</span>
               </p>
             </div>
 
@@ -163,7 +172,7 @@ export default function ProductDetailsPage() {
               Product details
             </summary>
             <p className="mt-2 text-gray-700">
-              {mainProduct.description || "Detailed description of the product goes here."}
+              {mainProduct.description || "No description available."}
             </p>
           </details>
         </div>
@@ -177,6 +186,7 @@ export default function ProductDetailsPage() {
             {relatedProducts.map((product) => (
               <ProductCard
                 key={product.id}
+                id={product.id} // ✅ ensures navigation works
                 name={product.name}
                 price={product.price}
                 img={product.images?.[0] || "/Assets/category1.png"}
