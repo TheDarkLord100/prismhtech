@@ -3,11 +3,13 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import Image from "next/image";
+import Link from "next/link";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
-type Partner = {
+// Define a type for your product data
+type Product = {
   id: number;
   title: string;
   description: string;
@@ -15,7 +17,8 @@ type Partner = {
   link: string;
 };
 
-const partners: Partner[] = [
+// Use a more semantically appropriate name for the data array
+const products: Product[] = [
   {
     id: 1,
     title: "Electroplating",
@@ -25,117 +28,157 @@ const partners: Partner[] = [
   },
   {
     id: 2,
-    title: "Metal Finishing",
-    description: "High-quality coating and durability solutions.",
+    title: "Laboratory Reagents",
+    description: "Luctus nec ullamcorper mattis, pulvinar dapibus leo.",
     image: "/partners/partner.png",
     link: "#",
   },
   {
     id: 3,
-    title: "Surface Treatment",
-    description: "Advanced processes for better performance.",
+    title: "PH Paper",
+    description: "Luctus nec ullamcorper mattis, pulvinar dapibus leo.",
     image: "/partners/partner.png",
     link: "#",
   },
   {
     id: 4,
-    title: "Anodizing",
-    description: "Durable surface coating for protection and aesthetics.",
+    title: "Hydrogen Peroxide",
+    description: "Luctus nec ullamcorper mattis, pulvinar dapibus leo.",
     image: "/partners/partner.png",
     link: "#",
   },
   {
     id: 5,
-    title: "Powder Coating",
-    description: "Environmentally friendly, long-lasting finish.",
-    image: "/partners/partner.png",
-    link: "#",
-  },
-  {
-    id: 6,
-    title: "Galvanizing",
-    description: "Corrosion resistance through zinc coating.",
-    image: "/partners/partner.png",
-    link: "#",
-  },
-  {
-    id: 7,
-    title: "Polishing",
-    description: "Smooth finishes for a premium look and feel.",
-    image: "/partners/partner.png",
-    link: "#",
-  },
-  {
-    id: 8,
-    title: "Heat Treatment",
-    description: "Enhancing strength and durability of metals.",
+    title: "Water Treatment",
+    description: "Luctus nec ullamcorper mattis, pulvinar dapibus leo.",
     image: "/partners/partner.png",
     link: "#",
   },
 ];
 
-export default function PartnerSlider() {
+export default function ProductsSlider() {
   return (
-    <div className="w-full py-20 px-8 bg-transparent">
-      <div className="flex flex-col md:flex-row items-start justify-between gap-12 max-w-7xl mx-auto">
-        <div className="md:w-1/3">
-          <h3 className="text-white text-lg uppercase tracking-widest">Our</h3>
-          <h2 className="text-5xl font-bold text-yellow-400 leading-tight">
-            OFFERED <br /> PRODUCTS
-          </h2>
+    <section className="w-full py-20 px-8 bg-transparent">
+      {/* Main container with max-w and center alignment */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-7xl mx-auto">
+        {/* Left side text and view all link */}
+        <div className="md:w-1/3 w-full flex flex-col gap-6 items-center md:items-start text-center md:text-left">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-white text-lg uppercase tracking-widest font-light">
+              OUR
+            </h3>
+            <h2 className="text-5xl font-bold text-[#F4E16E] italic leading-tight">
+              OFFERED <br /> PRODUCTS
+            </h2>
+            {/* Horizontal line for visual separation */}
+            <div className="w-12 h-0.5 bg-gray-400 my-2"></div>
+            <Link
+              href="#"
+              className="text-gray-300 text-base hover:text-white transition-colors duration-300"
+            >
+              View all products →
+            </Link>
+          </div>
         </div>
-        {/* Slider on Left Side */}
-        <div className="md:w-2/3 w-full">
+
+        {/* Right side slider container */}
+        <div className="md:w-2/3 w-full relative">
           <Swiper
             modules={[Navigation]}
             spaceBetween={24}
-            slidesPerView={3}
-            navigation
+            slidesPerView={1}
+            navigation={{
+              nextEl: ".custom-swiper-button-next",
+              prevEl: ".custom-swiper-button-prev",
+            }}
             loop
             breakpoints={{
-              320: { slidesPerView: 1 },
               640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
+              1024: { slidesPerView: 4 },
             }}
+            className="mySwiper"
           >
-            {partners.map((partner) => (
-              <SwiperSlide key={partner.id}>
-                <div className="flex flex-col">
-                  {/* Image */}
-                  <div className="relative w-full h-52">
+            {products.map((product) => (
+              <SwiperSlide key={product.id}>
+                {/* Individual product card */}
+                <div className="flex flex-col rounded-md overflow-hidden bg-white/5 transition-transform duration-300 hover:scale-105">
+                  {/* Image container */}
+                  <div className="relative w-full h-48 sm:h-64">
                     <Image
-                      src={partner.image}
-                      alt={partner.title}
+                      src={product.image}
+                      alt={product.title}
                       fill
                       className="object-cover"
                       unoptimized
                     />
                   </div>
-
-                  {/* Transparent Text Section */}
-                  <div className="p-4 bg-transparent">
-                    <h3 className="text-white text-lg font-semibold">
-                      {partner.title}
+                  {/* Text section */}
+                  {/* Change: Added 'text-left' to align content to the left */}
+                  <div className="p-4 bg-transparent text-left">
+                    <h3 className="text-white text-base font-semibold">
+                      {product.title}
                     </h3>
-                    <p className="text-gray-200 text-sm mt-1">
-                      {partner.description}
+                    <p className="text-gray-300 text-xs mt-1">
+                      {product.description}
                     </p>
-                    <a
-                      href={partner.link}
-                      className="text-yellow-400 mt-3 inline-block text-sm font-semibold hover:underline"
+                    <Link
+                      href={product.link}
+                      className="text-[#F4E16E] mt-3 inline-block text-sm font-semibold hover:underline"
                     >
                       View products
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
+          {/* Custom navigation arrows for Swiper */}
+          {/* Previous Button (on the top left) */}
+          <div className="custom-swiper-button-prev absolute top-4 left-6 z-10 hidden md:block">
+            <button
+              aria-label="Previous slide"
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/40 transition-colors duration-300 focus:outline-none"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          </div>
+          {/* Next Button (on the top right) */}
+          <div className="custom-swiper-button-next absolute top-4 right-6 z-10 hidden md:block">
+            <button
+              aria-label="Next slide"
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/40 transition-colors duration-300 focus:outline-none"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
-
-        {/* Static Section on Right Side */}
-        
       </div>
-    </div>
+    </section>
   );
 }
