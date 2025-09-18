@@ -3,7 +3,8 @@
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState, useRef } from "react";
-import Link from "next/link"; // ✅ For navigation
+import Link from "next/link";
+import { useSearchParams } from "next/navigation"; // ✅ for query params
 
 // Type for products
 type Product = {
@@ -13,19 +14,21 @@ type Product = {
   images?: string[];
   description?: string;
   priceType?: "fixed" | "variable";
-  category?: string; // ✅ added category type
+  category?: string;
 };
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // ✅ category state
-  const [loading, setLoading] = useState(true); // ✅ Loader state
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch products (with optional category)
-  const fetchProducts = async (category?: string) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams(); // ✅ get query
+  const category = searchParams.get("category"); // ✅ fetch category from URL
+
+  // Fetch products
+  const fetchProducts = async () => {
     try {
       setLoading(true);
       const url = category
@@ -43,19 +46,10 @@ export default function ProductsPage() {
     }
   };
 
-  // Initial fetch
+  // Fetch on load or when category changes
   useEffect(() => {
     fetchProducts();
-  }, []);
-
-  // Refetch when category changes
-  useEffect(() => {
-    if (selectedCategory) {
-      fetchProducts(selectedCategory);
-    } else {
-      fetchProducts();
-    }
-  }, [selectedCategory]);
+  }, [category]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -86,12 +80,6 @@ export default function ProductsPage() {
       sorted.sort((a, b) => b.price - a.price);
     } else if (type === "low-to-high") {
       sorted.sort((a, b) => a.price - b.price);
-    } else if (type === "rating") {
-      console.log("Sort by rating");
-    } else if (type === "popularity") {
-      console.log("Sort by popularity");
-    } else if (type === "discount") {
-      console.log("Sort by discount");
     }
     setProducts(sorted);
     setSelectedSort(type);
@@ -132,15 +120,15 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Header & Controls */}
+        {/* Header */}
         <div className="flex justify-between items-center mb-10 w-full max-w-7xl mx-auto px-2 sm:px-4 relative">
           <h1 className="text-2xl font-semibold text-white relative inline-block">
-            Products
+            {category ? `Products in ${category}` : "All Products"}
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-purple-500 rounded-full mt-1" />
           </h1>
 
+          {/* Sort Button */}
           <div className="flex items-center gap-6 text-sm">
-            {/* Sort */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
@@ -148,18 +136,9 @@ export default function ProductsPage() {
                   ${selectedSort ? "border-2 border-purple-500" : ""}`}
               >
                 <span className="text-gray-200">Sort</span>
-                <div className="flex items-center gap-1">
-                  <svg
-                    className="w-4 h-4 text-purple-300"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h5a1 1 0 000-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3z" />
-                  </svg>
-                </div>
               </button>
 
-              {/* Dropdown menu */}
+              {/* Dropdown */}
               {showSortMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-gray-200 rounded-lg shadow-lg z-50">
                   <p className="px-4 py-2 text-sm text-gray-400 border-b border-gray-600">
@@ -177,51 +156,8 @@ export default function ProductsPage() {
                   >
                     Price - low to high
                   </button>
-                  <button
-                    onClick={() => handleSort("rating")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                  >
-                    Customer Rating
-                  </button>
-                  <button
-                    onClick={() => handleSort("popularity")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                  >
-                    Popularity
-                  </button>
-                  <button
-                    onClick={() => handleSort("discount")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                  >
-                    Discount
-                  </button>
                 </div>
               )}
-            </div>
-
-            {/* Filter (just a trigger for now) */}
-            <div
-              className="flex items-center gap-2 text-white cursor-pointer"
-              onClick={() =>
-                setSelectedCategory(selectedCategory ? null : "Shoes") // ✅ toggle example
-              }
-            >
-              <span className="text-gray-200">
-                {selectedCategory ? `Category: ${selectedCategory}` : "Filter"}
-              </span>
-              <div className="flex items-center gap-1">
-                <svg
-                  className="w-4 h-4 text-purple-300"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
             </div>
           </div>
         </div>
@@ -229,15 +165,15 @@ export default function ProductsPage() {
         {/* Product Grid */}
         <div className="flex justify-center">
           {loading ? (
-            // ✅ Built-in loader
             <div className="flex justify-center items-center h-40 w-full">
               <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
             </div>
+          ) : products.length === 0 ? (
+            <p className="text-white text-lg">No products found.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-0 max-w-7xl w-full px-2 sm:px-4">
               {products.map((p) => (
                 <div key={p.id} className="flex justify-center">
-                  {/* ✅ Wrap ProductCard with Link */}
                   <Link href={`/ProductDetails/${p.id}`} className="block w-full">
                     <ProductCard
                       name={p.name}

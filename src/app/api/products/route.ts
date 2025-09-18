@@ -9,7 +9,9 @@ export async function POST(req: Request) {
     const supabase = createClient(cookies());
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json();
     const newProduct = {
@@ -52,7 +54,8 @@ export async function GET(req: Request) {
     let query = supabase.from("products").select("*");
 
     if (category) {
-      query = query.eq("category", category); // ✅ filter by category
+      // ✅ filter only if category is provided
+      query = query.eq("category", category);
     }
 
     const { data, error } = await query;

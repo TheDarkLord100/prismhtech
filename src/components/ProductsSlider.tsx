@@ -9,7 +9,6 @@ import Link from "next/link";
 import "swiper/css";
 import "swiper/css/navigation";
 
-// Define a type for your category data
 type Category = {
   id: string;
   name: string;
@@ -17,7 +16,6 @@ type Category = {
   image_url?: string;
 };
 
-// Associated companies data (unchanged)
 const companies = [
   { id: 1, name: "Unique Rubber", logo: "/Companies/unique.png" },
   { id: 2, name: "Atotech", logo: "/Companies/atotech.png" },
@@ -58,7 +56,7 @@ export default function ProductsSlider() {
               </h2>
               <div className="w-12 h-0.5 bg-gray-400 my-2"></div>
               <Link
-                href="/products"
+                href="/Products"
                 className="text-gray-300 text-base hover:text-white transition-colors duration-300"
               >
                 View all products →
@@ -84,36 +82,35 @@ export default function ProductsSlider() {
             >
               {categories.map((category) => (
                 <SwiperSlide key={category.id}>
-                  <div className="flex flex-col rounded-md overflow-hidden bg-white/5 transition-transform duration-300 hover:scale-105">
-                    <div className="relative w-full h-48 sm:h-64">
-                      <Image
-                        src={category.image_url || "/partners/partner.png"}
-                        alt={category.name}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
+                  <Link href={`/Products?category=${encodeURIComponent(category.name)}`}>
+                    <div className="flex flex-col rounded-md overflow-hidden bg-white/5 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                      <div className="relative w-full h-48 sm:h-64">
+                        <Image
+                          src={category.image_url || "/partners/partner.png"}
+                          alt={category.name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="p-4 bg-transparent text-left">
+                        <h3 className="text-white text-base font-semibold">
+                          {category.name}
+                        </h3>
+                        <p className="text-gray-300 text-xs mt-1">
+                          {category.description}
+                        </p>
+                        <span className="text-[#F4E16E] mt-3 inline-block text-sm font-semibold hover:underline">
+                          View products
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-4 bg-transparent text-left">
-                      <h3 className="text-white text-base font-semibold">
-                        {category.name}
-                      </h3>
-                      <p className="text-gray-300 text-xs mt-1">
-                        {category.description}
-                      </p>
-                      <Link
-                        href={`/products?category=${category.name}`}
-                        className="text-[#F4E16E] mt-3 inline-block text-sm font-semibold hover:underline"
-                      >
-                        View products
-                      </Link>
-                    </div>
-                  </div>
+                  </Link>
                 </SwiperSlide>
               ))}
             </Swiper>
 
-            {/* Custom navigation buttons (unchanged) */}
+            {/* Navigation Buttons */}
             <div className="custom-swiper-button-prev absolute top-4 left-6 z-10 hidden md:block">
               <button
                 aria-label="Previous slide"
@@ -161,7 +158,7 @@ export default function ProductsSlider() {
         </div>
       </section>
 
-      {/* Associated Companies Section (unchanged) */}
+      {/* Associated Companies Section */}
       <section className="w-full py-20 px-8 bg-transparent">
         <div className="max-w-7xl mx-auto flex flex-col items-start gap-8 relative w-full">
           <div className="flex flex-col gap-2 mb-8">
