@@ -20,9 +20,15 @@ export async function POST(req: Request) {
       is_fixed_price: body.is_fixed_price ?? true,
       variants: body.variants ? JSON.stringify(body.variants) : null,
       images: body.images || null,
+      category: body.category || null, // ✅ store category if provided
     };
 
-    const { data, error } = await supabase.from("products").insert([newProduct]).select().single();
+    const { data, error } = await supabase
+      .from("products")
+      .insert([newProduct])
+      .select()
+      .single();
+      
     if (error) throw error;
 
     return NextResponse.json(data, { status: 201 });
@@ -35,12 +41,21 @@ export async function POST(req: Request) {
   }
 }
 
-// GET All Products
-export async function GET() {
+// GET All Products (with optional category filter)
+export async function GET(req: Request) {
   try {
     const supabase = createClient(cookies());
+    const { searchParams } = new URL(req.url);
 
-    const { data, error } = await supabase.from("products").select("*");
+    const category = searchParams.get("category");
+
+    let query = supabase.from("products").select("*");
+
+    if (category) {
+      query = query.eq("category", category); // ✅ filter by category
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
 
     return NextResponse.json(data, { status: 200 });

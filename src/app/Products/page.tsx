@@ -13,32 +13,49 @@ type Product = {
   images?: string[];
   description?: string;
   priceType?: "fixed" | "variable";
+  category?: string; // ✅ added category type
 };
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // ✅ category state
   const [loading, setLoading] = useState(true); // ✅ Loader state
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch products from API
+  // Fetch products (with optional category)
+  const fetchProducts = async (category?: string) => {
+    try {
+      setLoading(true);
+      const url = category
+        ? `/api/products?category=${encodeURIComponent(category)}`
+        : `/api/products`;
+
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to fetch products");
+      const data = await res.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/products", { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to fetch products");
-        const data = await res.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProducts();
   }, []);
+
+  // Refetch when category changes
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchProducts(selectedCategory);
+    } else {
+      fetchProducts();
+    }
+  }, [selectedCategory]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -182,9 +199,16 @@ export default function ProductsPage() {
               )}
             </div>
 
-            {/* Filter */}
-            <div className="flex items-center gap-2 text-white">
-              <span className="text-gray-200">Filter</span>
+            {/* Filter (just a trigger for now) */}
+            <div
+              className="flex items-center gap-2 text-white cursor-pointer"
+              onClick={() =>
+                setSelectedCategory(selectedCategory ? null : "Shoes") // ✅ toggle example
+              }
+            >
+              <span className="text-gray-200">
+                {selectedCategory ? `Category: ${selectedCategory}` : "Filter"}
+              </span>
               <div className="flex items-center gap-1">
                 <svg
                   className="w-4 h-4 text-purple-300"
