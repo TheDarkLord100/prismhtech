@@ -1,14 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaFacebookF, FaLinkedinIn, FaWhatsapp } from "react-icons/fa";
+
+type Category = {
+  id: string;
+  name: string;
+};
 
 export default function Footer() {
   const [open, setOpen] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const toggleSection = (section: string) => {
     setOpen(open === section ? null : section);
   };
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/categories", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch categories");
+        const data: Category[] = await res.json();
+        setCategories(data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCategories();
+  }, []);
 
   return (
     <footer className="bg-transparent text-white py-10 px-6 md:px-20 border-t-4 border-[#FFC107]">
@@ -32,25 +57,17 @@ export default function Footer() {
           <h3 className="font-bold text-lg border-b-2 border-yellow-400 inline-block pb-1">
             Products
           </h3>
-          <ul className="mt-3 space-y-2 text-sm">
-            {[
-              "Electroplating",
-              "Laboratory Reagents",
-              "PH Paper",
-              "Phosphating Group",
-              "Industrial Solvents",
-              "Caustic Soda Group",
-              "Specialty Chemicals",
-              "Engineering",
-              "Soda Ash",
-              "Industrial Hardware",
-              "Hydrogen Peroxide Group",
-              "Water Treatment Group",
-              "Metals",
-            ].map((item) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
+          {loading ? (
+            <p className="mt-3 text-sm">Loading...</p>
+          ) : categories.length === 0 ? (
+            <p className="mt-3 text-sm">No products found.</p>
+          ) : (
+            <ul className="mt-3 space-y-2 text-sm">
+              {categories.map((cat) => (
+                <li key={cat.id}>• {cat.name}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Social Media */}
@@ -105,25 +122,17 @@ export default function Footer() {
             <span>{open === "products" ? "▲" : "▼"}</span>
           </button>
           {open === "products" && (
-            <ul className="mt-2 space-y-2 text-sm">
-              {[
-                "Electroplating",
-                "Laboratory Reagents",
-                "PH Paper",
-                "Phosphating Group",
-                "Industrial Solvents",
-                "Caustic Soda Group",
-                "Specialty Chemicals",
-                "Engineering",
-                "Soda Ash",
-                "Industrial Hardware",
-                "Hydrogen Peroxide Group",
-                "Water Treatment Group",
-                "Metals",
-              ].map((item) => (
-                <li key={item}>• {item}</li>
-              ))}
-            </ul>
+            loading ? (
+              <p className="mt-2 text-sm">Loading...</p>
+            ) : categories.length === 0 ? (
+              <p className="mt-2 text-sm">No products found.</p>
+            ) : (
+              <ul className="mt-2 space-y-2 text-sm">
+                {categories.map((cat) => (
+                  <li key={cat.id}>• {cat.name}</li>
+                ))}
+              </ul>
+            )
           )}
         </div>
 

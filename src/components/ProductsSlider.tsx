@@ -16,29 +16,49 @@ type Category = {
   image_url?: string;
 };
 
-const companies = [
-  { id: 1, name: "Unique Rubber", logo: "/Companies/unique.png" },
-  { id: 2, name: "Atotech", logo: "/Companies/atotech.png" },
-  { id: 3, name: "Dummy Company 1", logo: "/Companies/unique.png" },
-  { id: 4, name: "Dummy Company 2", logo: "/Companies/atotech.png" },
-];
+type Brand = {
+  id: string;
+  name: string;
+  logo_url: string | null;
+};
 
 export default function ProductsSlider() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingBrands, setLoadingBrands] = useState(true);
 
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch("/api/categories");
+        setLoadingCategories(true);
+        const res = await fetch("/api/categories", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch categories");
         const data = await res.json();
         setCategories(data);
       } catch (err) {
         console.error("Error fetching categories:", err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    }
+
+    async function fetchBrands() {
+      try {
+        setLoadingBrands(true);
+        const res = await fetch("/api/brands", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch brands");
+        const data: Brand[] = await res.json();
+        setBrands(data);
+      } catch (err) {
+        console.error("Error fetching brands:", err);
+      } finally {
+        setLoadingBrands(false);
       }
     }
 
     fetchCategories();
+    fetchBrands();
   }, []);
 
   return (
@@ -65,50 +85,62 @@ export default function ProductsSlider() {
           </div>
 
           <div className="md:w-2/3 w-full relative">
-            <Swiper
-              modules={[Navigation]}
-              spaceBetween={24}
-              slidesPerView={1}
-              navigation={{
-                nextEl: ".custom-swiper-button-next",
-                prevEl: ".custom-swiper-button-prev",
-              }}
-              loop
-              breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 4 },
-              }}
-              className="mySwiper"
-            >
-              {categories.map((category) => (
-                <SwiperSlide key={category.id}>
-                  <Link href={`/Products?category=${encodeURIComponent(category.name)}`}>
-                    <div className="flex flex-col rounded-md overflow-hidden bg-white/5 transition-transform duration-300 hover:scale-105 cursor-pointer">
-                      <div className="relative w-full h-48 sm:h-64">
-                        <Image
-                          src={category.image_url || "/partners/partner.png"}
-                          alt={category.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
+            {loadingCategories ? (
+              <div className="flex justify-center items-center h-40 w-full">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
+              </div>
+            ) : categories.length === 0 ? (
+              <p className="text-white text-lg">No categories found.</p>
+            ) : (
+              <Swiper
+                modules={[Navigation]}
+                spaceBetween={24}
+                slidesPerView={1}
+                navigation={{
+                  nextEl: ".custom-swiper-button-next",
+                  prevEl: ".custom-swiper-button-prev",
+                }}
+                loop
+                breakpoints={{
+                  640: { slidesPerView: 2 },
+                  1024: { slidesPerView: 4 },
+                }}
+                className="mySwiper"
+              >
+                {categories.map((category) => (
+                  <SwiperSlide key={category.id}>
+                    <Link
+                      href={`/Products?category=${encodeURIComponent(
+                        category.name
+                      )}`}
+                    >
+                      <div className="flex flex-col rounded-md overflow-hidden bg-white/5 transition-transform duration-300 hover:scale-105 cursor-pointer">
+                        <div className="relative w-full h-48 sm:h-64">
+                          <Image
+                            src={category.image_url || "/partners/partner.png"}
+                            alt={category.name}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                        <div className="p-4 bg-transparent text-left">
+                          <h3 className="text-white text-base font-semibold">
+                            {category.name}
+                          </h3>
+                          <p className="text-gray-300 text-xs mt-1">
+                            {category.description}
+                          </p>
+                          <span className="text-[#F4E16E] mt-3 inline-block text-sm font-semibold hover:underline">
+                            View products
+                          </span>
+                        </div>
                       </div>
-                      <div className="p-4 bg-transparent text-left">
-                        <h3 className="text-white text-base font-semibold">
-                          {category.name}
-                        </h3>
-                        <p className="text-gray-300 text-xs mt-1">
-                          {category.description}
-                        </p>
-                        <span className="text-[#F4E16E] mt-3 inline-block text-sm font-semibold hover:underline">
-                          View products
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            )}
 
             {/* Navigation Buttons */}
             <div className="custom-swiper-button-prev absolute top-4 left-6 z-10 hidden md:block">
@@ -170,37 +202,50 @@ export default function ProductsSlider() {
             </h2>
           </div>
 
-          <Swiper
-            modules={[Navigation]}
-            spaceBetween={24}
-            slidesPerView={1}
-            navigation={{
-              nextEl: ".companies-swiper-button-next",
-              prevEl: ".companies-swiper-button-prev",
-            }}
-            loop
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-            className="w-full"
-          >
-            {companies.map((company) => (
-              <SwiperSlide key={company.id}>
-                <div className="flex justify-center items-center">
-                  <Image
-                    src={company.logo}
-                    alt={company.name}
-                    width={500}
-                    height={100}
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          {loadingBrands ? (
+            <div className="flex justify-center items-center h-40 w-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
+            </div>
+          ) : brands.length === 0 ? (
+            <p className="text-white text-lg">No brands found.</p>
+          ) : (
+            <Swiper
+              modules={[Navigation]}
+              spaceBetween={24}
+              slidesPerView={1}
+              navigation={{
+                nextEl: ".companies-swiper-button-next",
+                prevEl: ".companies-swiper-button-prev",
+              }}
+              loop
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+              }}
+              className="w-full"
+            >
+              {brands.map((brand) => (
+                <SwiperSlide key={brand.id}>
+                  <div className="flex justify-center items-center">
+                    {brand.logo_url ? (
+                      <Image
+                        src={brand.logo_url}
+                        alt={brand.name}
+                        width={500}
+                        height={100}
+                        className="object-contain"
+                        unoptimized
+                      />
+                    ) : (
+                      <p className="text-gray-400">No Logo</p>
+                    )}
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
 
+          {/* Navigation Buttons */}
           <div className="companies-swiper-button-prev absolute top-1/2 -left-6 z-10 hidden md:block">
             <button
               aria-label="Previous company"
