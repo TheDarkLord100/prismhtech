@@ -43,19 +43,22 @@ export async function POST(req: Request) {
   }
 }
 
-// GET All Products (with optional category filter)
 export async function GET(req: Request) {
   try {
     const supabase = createClient(cookies());
     const { searchParams } = new URL(req.url);
 
     const category = searchParams.get("category");
+    const brand = searchParams.get("brand");
 
     let query = supabase.from("products").select("*");
 
     if (category) {
-      // ✅ filter only if category is provided
-      query = query.eq("category", category);
+      query = query.eq("product_category_id", category);
+    }
+
+    if (brand) {
+      query = query.eq("brand_id", brand);
     }
 
     const { data, error } = await query;
