@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useSignupStore } from "@/utils/store/signupStore";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { notify, Notification } from "@/utils/notify";
 
 export default function UserDetailsPage() {
   const { data, setData, reset } = useSignupStore();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -16,6 +19,13 @@ export default function UserDetailsPage() {
   const [gstin, setGstin] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    console.log("Signup data from store:", data);
+    if (!data || !data.name || !data.phone || !data.dob || !data.location) {
+      router.replace("/signup"); // replace so user can't go back
+    }
+  }, []);
 
   const handleSubmit = async () => {
     if (loading) return;
@@ -43,9 +53,10 @@ export default function UserDetailsPage() {
 
    const result = await res.json();
    if (res.ok) {
-     alert("User registered successfully!");
+      notify(Notification.SUCCESS, "Sign up successful! Please verify your email.");
+     router.push("/");
    } else {
-     alert("Error during sign up: " + result.error);
+     notify(Notification.FAILURE, "Error during sign up: " + result.error);
    }
 
     setLoading(false);
