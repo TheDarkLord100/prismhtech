@@ -6,7 +6,12 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { email, password, name, phone, dob, location, gstin } = body;
+    console.log("Received data:", body);
 
+    if (!email || !password || !name || !phone || !dob || !location) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    
     const supabase = createClient(cookies());
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
 
     // 2. Insert into users table
     const { error: dbError } = await supabase.from("users").insert([
-      { id: userId, name, phone, dob, location, gstin },
+      { id: userId, name, email, phone, dob, location, gstin },
     ]);
 
     if (dbError) {

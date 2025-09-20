@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
+import { notify, Notification } from "@/utils/notify";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -32,19 +33,20 @@ export default function LoginPage() {
       }
 
       else {
+        notify(Notification.SUCCESS, "Login successful!");
         router.push("/");
       }
 
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error during sign in:", error.message);
-        alert(error.message);
+        notify(Notification.FAILURE, error.message);
       } else {
         console.error("Unexpected error:", error);
-        alert("Something went wrong during login.");
+        notify(Notification.FAILURE, "Something went wrong during login.");
       }
     }
-
+    setLoading(false);
   };
 
   return (
