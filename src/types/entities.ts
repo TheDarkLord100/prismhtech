@@ -14,3 +14,16 @@ export interface Product {
   price: number; // base price (for fixed), or starting price (for variable)
   variants?: Variant[];
 }
+
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  image_url?: string;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  logo_url: string | null;
+}
