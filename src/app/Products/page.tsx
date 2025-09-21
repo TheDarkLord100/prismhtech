@@ -1,10 +1,10 @@
+// app/products/page.tsx
 "use client";
 
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState, useRef } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation"; // ✅ for query params
+import { useSearchParams, useRouter } from "next/navigation";
 
 // Type for products
 type Product = {
@@ -24,10 +24,11 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchParams = useSearchParams(); // ✅ get query
-  const category = searchParams.get("category"); // ✅ fetch category from URL
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+  const router = useRouter();
 
-  // Fetch products
+  // Fetch products from API
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -84,6 +85,11 @@ export default function ProductsPage() {
     setProducts(sorted);
     setSelectedSort(type);
     setShowSortMenu(false);
+  };
+
+  // Handle card click navigation
+  const handleCardClick = (id: string) => {
+    router.push(`/ProductDetails/${id}`);
   };
 
   return (
@@ -173,14 +179,14 @@ export default function ProductsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-0 max-w-7xl w-full px-2 sm:px-4">
               {products.map((p) => (
-                <div key={p.id} className="flex justify-center">
-                  <Link href={`/ProductDetails/${p.id}`} className="block w-full">
-                    <ProductCard
-                      name={p.name}
-                      price={p.price}
-                      img={p.images?.[0] || "/Assets/category1.png"}
-                    />
-                  </Link>
+                <div key={p.id} className="flex justify-center w-full">
+                  <ProductCard
+                    id={p.id}
+                    name={p.name}
+                    price={p.price}
+                    img={p.images?.[0] || "/Assets/category1.png"}
+                    onClick={() => handleCardClick(p.id)} // ✅ card click navigates
+                  />
                 </div>
               ))}
             </div>

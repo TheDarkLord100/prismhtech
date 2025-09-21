@@ -1,27 +1,29 @@
-// components/ProductCard.tsx
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/app/context/CartContext";
 
 type ProductCardProps = {
-  id?: string;
+  id: string;
   name: string;
   price: number;
   img: string;
-  onClick?: () => void; // still supported if you want custom click
+  onClick?: () => void;
 };
 
 export default function ProductCard({ id, name, price, img, onClick }: ProductCardProps) {
-  const [qty, setQty] = useState(0);
   const router = useRouter();
+  const { items, addToCart, updateQty } = useCart();
+
+  const itemInCart = items.find((p) => p.id === id);
+  const qty = itemInCart?.qty || 0;
 
   const handleClick = () => {
     if (onClick) {
-      onClick(); // let parent handle if provided
-    } else if (id) {
-      router.push(`/ProductDetails/${id}`); // ✅ navigate to details
+      onClick();
+    } else {
+      router.push(`/ProductDetails/${id}`);
     }
   };
 
@@ -54,23 +56,13 @@ export default function ProductCard({ id, name, price, img, onClick }: ProductCa
 
         {/* Qty / Add */}
         <div className="w-[40%] px-2 py-2 flex flex-col justify-center items-center">
-          {qty === 0 ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // stop navigation
-                setQty(1);
-              }}
-              className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-md shadow"
+          {qty > 0 ? (
+            <div
+              className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
             >
-              Add
-            </button>
-          ) : (
-            <div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setQty((q) => Math.max(0, q - 1));
-                }}
+                onClick={() => updateQty(id, Math.max(qty - 1, 0))}
                 className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
               >
                 -
@@ -81,15 +73,22 @@ export default function ProductCard({ id, name, price, img, onClick }: ProductCa
               </span>
 
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setQty((q) => q + 1);
-                }}
+                onClick={() => addToCart({ id, name, price, img })}
                 className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
               >
                 +
               </button>
             </div>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart({ id, name, price, img, qty: 1 });
+              }}
+              className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-md shadow"
+            >
+              Add
+            </button>
           )}
         </div>
       </div>
