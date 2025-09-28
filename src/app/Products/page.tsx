@@ -186,6 +186,7 @@ export default function ProductsPage() {
                 <div key={p.id} className="flex justify-center">
                   <ProductCard
                     name={p.name}
+                    id={p.id}
                     price={p.price}
                     img={p.images?.[0] || "/Assets/category1.png"}
                     onClick={() => router.push(`/ProductDetails/${p.id}`)}

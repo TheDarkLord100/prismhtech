@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, ShoppingCart, User } from "lucide-react";
+import { useUserStore } from "@/utils/store/userStore";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const user = useUserStore((s) => s.user);
 
   // Hide on scroll down, show on scroll up
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function Navbar() {
               <Link href="/Cart">
                 <ShoppingCart className="w-5 h-5 cursor-pointer" />
               </Link>
-              <Link href="/login">
+              <Link href={user ? "/profile" : "/login"}>
                 <User className="w-5 h-5 cursor-pointer" />
               </Link>
             </div>
@@ -113,8 +115,12 @@ export default function Navbar() {
             <Link onClick={() => setOpen(false)} href="/contact" className="text-black text-2xl font-medium">Contact Us</Link>
 
             <div className="flex gap-6 pt-2">
-              <ShoppingCart className="w-7 h-7 text-black" />
-              <User className="w-7 h-7 text-black" />
+              <Link href="/Cart">
+                <ShoppingCart className="w-7 h-7 text-black" />
+              </Link>
+              <Link href={user ? "/profile" : "/login"}>
+                <User className="w-7 h-7 text-black" />
+              </Link>
             </div>
           </nav>
         </div>
