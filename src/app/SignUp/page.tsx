@@ -36,7 +36,7 @@ export default function SignUpPage() {
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="relative w-full max-w-md rounded-2xl bg-[#FFFDEF] p-10 shadow-[0px_0px_25px_5px_rgba(0,0,0,0.5)]">
           <h1 className="mb-8 text-3xl font-bold text-[#16463B]">
-            Let's Get started
+            Let&apos;s Get started
           </h1>
 
           <form onSubmit={handleSubmit}>
