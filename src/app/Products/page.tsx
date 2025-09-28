@@ -1,3 +1,4 @@
+// app/products/page.tsx
 "use client";
 
 import Navbar from "@/components/Navbar";
@@ -17,7 +18,6 @@ export default function ProductsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const category = searchParams.get("category"); // category.id
   const brand = searchParams.get("brand"); // brand.id
 
@@ -91,6 +91,11 @@ export default function ProductsPage() {
       </div>
     );
   }
+
+  // Handle card click navigation
+  const handleCardClick = (id: string) => {
+    router.push(`/ProductDetails/${id}`);
+  };
 
   return (
     <>
