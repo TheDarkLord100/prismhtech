@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/Footer";
 import { notify, Notification } from "@/utils/notify";
+import { useUserStore } from "@/utils/store/userStore"; // ✅ import store
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -16,27 +17,28 @@ export default function LoginPage() {
 
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectedFrom") || "/";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      else {
-        notify(Notification.SUCCESS, "Login successful!");
-        router.push("/");
-      }
+      notify(Notification.SUCCESS, "Login successful!");
 
+      // ✅ fetch and set user in Zustand store
+      await useUserStore.getState().fetchUser();
+
+      // ✅ go back to intended page or home
+      router.push(redirectTo);
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error during sign in:", error.message);
@@ -109,8 +111,9 @@ export default function LoginPage() {
             type="submit"
             onClick={handleLogin}
             disabled={loading}
-            className="w-full rounded-lg bg-[#4CAF50] py-3 text-base font-semibold text-white hover:bg-[#9333EA] transition">
-            Sign in
+            className="w-full rounded-lg bg-[#4CAF50] py-3 text-base font-semibold text-white hover:bg-[#9333EA] transition"
+          >
+            {loading ? "Signing in..." : "Sign in"}
           </button>
 
           {/* Divider */}
@@ -120,14 +123,16 @@ export default function LoginPage() {
             <div className="h-[2px] flex-1 bg-[#16463B]"></div>
           </div>
 
-
           {/* Social Buttons */}
           <div className="space-y-3">
             {/* Google */}
             <button
               type="button"
-              onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] hover:bg-gray-300 transition">
+              onClick={() =>
+                supabase.auth.signInWithOAuth({ provider: "google" })
+              }
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] hover:bg-gray-300 transition"
+            >
               <span>Sign in with</span>
               <svg
                 className="h-5 w-5"
@@ -153,22 +158,13 @@ export default function LoginPage() {
               </svg>
             </button>
 
-            {/* Apple */}
+            {/* Signup */}
             <button
               type="button"
               onClick={() => router.push("/signup")}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] font hover:bg-gray-300 transition">
-              <span>Create a new Account</span>
-              {/* <svg
-              className="h-5 w-5"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 384 512"
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] hover:bg-gray-300 transition"
             >
-              <path
-                fill="black"
-                d="M318.7 268.7c-.3-36.7 16-64.4 50.2-84.8-19.2-27.9-48.3-43.3-85.5-46.3-35.9-2.9-75.4 20.8-89.4 20.8-14.5 0-47.6-19.9-73.8-19.4-38.1.6-73.6 22.2-92.9 56.4-39.8 68.9-10.2 170.8 28.6 226.8 19 27.7 41.6 58.6 71.3 57.5 28.5-1.1 39.2-18.5 73.5-18.5 34.1 0 44 18.5 73.9 18 30.4-.5 49.5-27.7 68.3-55.4 21.6-31.7 30.5-62.5 30.8-64.1-0.7-0.3-59-22.6-59.2-89zM255.9 81.4c18-21.8 30.1-52.2 26.8-81.4-25.9 1-57.3 17.3-75.9 39-16.7 19.4-31.4 50.7-27.5 80.6 29.1 2.2 58.6-16.5 76.6-38.2z"
-              />
-            </svg> */}
+              <span>Create a new Account</span>
             </button>
           </div>
         </div>
