@@ -13,6 +13,9 @@ export default function ProductDetailsPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
 
+  // ✅ New state for selected main image
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
@@ -24,6 +27,11 @@ export default function ProductDetailsPage() {
         const product = allProducts.find((p) => p.id === id) || null;
 
         setMainProduct(product);
+
+        if (product?.images?.length) {
+          setSelectedImage(product.images[0].image_url); // ✅ default first image
+        }
+
         setRelatedProducts(allProducts.filter((p) => p.id !== id).slice(0, 3));
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -41,31 +49,6 @@ export default function ProductDetailsPage() {
     <>
       <Navbar />
       <div className="max-w-6xl mx-auto px-6 py-10 mt-10">
-        {/* Search bar */}
-        <div className="flex justify-center mb-6">
-          <div className="relative w-full max-w-md">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 absolute left-3 top-2.5 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
-              />
-            </svg>
-          </div>
-        </div>
-
         {/* Breadcrumb */}
         <div className="text-gray-600 mb-10 text-3xl text-start">
           <span className="font-bold text-green-900 relative inline-block">
@@ -78,23 +61,28 @@ export default function ProductDetailsPage() {
         {/* Main Product Display */}
         <div className="flex flex-col md:flex-row items-start gap-10">
           <div className="flex flex-col gap-4">
-            {/* Main image */}
+            {/* ✅ Main image (changes on thumbnail click) */}
             <div className="relative w-[700px] h-[400px] rounded-2xl overflow-hidden">
               <Image
-                src={mainProduct.images?.[0].image_url || "/Assets/category1.png"}
+                src={selectedImage || mainProduct.images?.[0].image_url || "/Assets/category1.png"}
                 alt={mainProduct.name}
                 fill
                 className="object-cover"
               />
             </div>
 
-            {/* Thumbnails */}
+            {/* ✅ Thumbnails with active highlight */}
             <div className="flex gap-3">
               {(mainProduct.images || ["/Assets/category1.png"]).map(
                 (img, idx) => (
                   <div
                     key={idx}
-                    className="relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border border-gray-200 hover:border-green-500"
+                    onClick={() => setSelectedImage(img.image_url)}
+                    className={`relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${
+                      selectedImage === img.image_url
+                        ? "border-green-600"
+                        : "border-gray-200 hover:border-green-500"
+                    }`}
                   >
                     <Image
                       src={img.image_url}
