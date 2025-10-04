@@ -4,15 +4,23 @@ export interface Variant {
   price?: number; 
 }
 
+export interface ProductImage {
+  id: string;
+  image_url: string;
+  alt_text?: string;
+  priority?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string;
-  images: string[]; // multiple image URLs
+  images: ProductImage[]; 
   priceType: "fixed" | "variable";
-  price: number; // base price (for fixed), or starting price (for variable)
+  price: number;
   variants?: Variant[];
 }
+
 export interface Category {
   id: string;
   name: string;

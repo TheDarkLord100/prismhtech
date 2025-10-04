@@ -35,6 +35,7 @@ export default function ProductsPage() {
       if (!res.ok) throw new Error("Failed to fetch products");
 
       const data = await res.json();
+      console.log("Fetched products:", data);
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -188,7 +189,7 @@ export default function ProductsPage() {
                     name={p.name}
                     id={p.id}
                     price={p.price}
-                    img={p.images?.[0] || "/Assets/category1.png"}
+                    img={p.images?.[0].image_url || "/Assets/category1.png"}
                     onClick={() => router.push(`/ProductDetails/${p.id}`)}
                   />
                 </div>
