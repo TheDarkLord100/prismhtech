@@ -1,4 +1,3 @@
-// app/products/page.tsx
 "use client";
 
 import Navbar from "@/components/Navbar";
@@ -11,15 +10,18 @@ import type { Product } from "@/types/entities";
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [sortType, setSortType] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ search state
+  const [searchTerm, setSearchTerm] = useState("");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const category = searchParams.get("category"); // category.id
-  const brand = searchParams.get("brand"); // brand.id
+
+  const categoryName = searchParams.get("categoryName");
+  const brandName = searchParams.get("brandName");
+  const categoryId = searchParams.get("categoryId");
+  const brandId = searchParams.get("brandId");
 
   /** 🔹 Fetch Products */
   const fetchProducts = useCallback(async () => {
@@ -27,22 +29,20 @@ export default function ProductsPage() {
       setLoading(true);
 
       const url = new URL("/api/products", window.location.origin);
-
-      if (category) url.searchParams.set("category", category);
-      if (brand) url.searchParams.set("brand", brand);
+      if (categoryId) url.searchParams.set("category", categoryId);
+      if (brandId) url.searchParams.set("brand", brandId);
 
       const res = await fetch(url.toString(), { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch products");
 
-      const data = await res.json();
-      console.log("Fetched products:", data);
+      const data: Product[] = await res.json();
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
       setLoading(false);
     }
-  }, [category, brand]);
+  }, [categoryId, brandId]);
 
   useEffect(() => {
     fetchProducts();
@@ -64,7 +64,6 @@ export default function ProductsPage() {
   const visibleProducts = useMemo(() => {
     let result = [...products];
 
-    // filter by search term
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -74,7 +73,6 @@ export default function ProductsPage() {
       );
     }
 
-    // sort if needed
     if (sortType === "high-to-low") {
       result.sort((a, b) => b.price - a.price);
     } else if (sortType === "low-to-high") {
@@ -93,18 +91,13 @@ export default function ProductsPage() {
     );
   }
 
-  // Handle card click navigation
-  const handleCardClick = (id: string) => {
-    router.push(`/ProductDetails/${id}`);
-  };
-
   return (
     <>
       <Navbar />
       <main className="min-h-screen px-4 pt-24 pb-10 bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50]">
-        
+
         {/* 🔍 Search Bar */}
-        <div className="flex justify-center mb-14">
+        <div className="flex justify-center mb-6">
           <div className="relative w-full max-w-md">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
               <svg
@@ -124,7 +117,7 @@ export default function ProductsPage() {
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} // ✅ controlled input
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search products..."
               className="w-full pl-10 pr-4 py-2 
                 bg-white/20 border border-white/30 rounded-full 
@@ -135,17 +128,18 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* 🏷️ Header + Sort */}
-        <div className="flex justify-between items-center mb-10 w-full max-w-7xl mx-auto px-2 sm:px-4 relative">
+        {/* 🔹 Heading + Sort aligned horizontally */}
+        <div className="flex justify-between items-center mb-10 w-full max-w-7xl mx-auto px-2 sm:px-4">
           <h1 className="text-2xl font-semibold text-white relative inline-block">
-            {category
-              ? `Products in category`
-              : brand
-              ? `Products by brand`
+            {categoryName
+              ? `Products in ${categoryName}`
+              : brandName
+              ? `Products by ${brandName}`
               : "All Products"}
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-purple-500 rounded-full mt-1" />
           </h1>
 
+          {/* Sort Button */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowSortMenu((prev) => !prev)}
@@ -190,7 +184,11 @@ export default function ProductsPage() {
                     id={p.id}
                     price={p.price}
                     img={p.images?.[0].image_url || "/Assets/category1.png"}
-                    onClick={() => router.push(`/ProductDetails/${p.id}`)}
+                    onClick={() =>
+                      router.push(
+                        `/ProductDetails/${p.id}?category=${categoryName || ""}&brand=${brandName || ""}`
+                      )
+                    }
                   />
                 </div>
               ))}
