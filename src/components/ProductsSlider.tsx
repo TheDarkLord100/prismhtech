@@ -31,7 +31,6 @@ export default function ProductsSlider({
                 OFFERED <br /> PRODUCTS
               </h2>
               <div className="w-12 h-0.5 bg-gray-400 my-2"></div>
-              {/* ✅ All products → no query param */}
               <Link
                 href="/Products"
                 className="text-gray-300 text-base hover:text-white transition-colors duration-300"
@@ -62,8 +61,11 @@ export default function ProductsSlider({
               >
                 {categories.map((category) => (
                   <SwiperSlide key={category.id}>
-                    {/* ✅ Pass category id in query */}
-                    <Link href={`/Products?category=${encodeURIComponent(category.id)}`}>
+                    <Link
+                      href={`/Products?categoryId=${category.id}&categoryName=${encodeURIComponent(
+                        category.name
+                      )}`}
+                    >
                       <div className="flex flex-col rounded-md overflow-hidden bg-white/5 transition-transform duration-300 hover:scale-105 cursor-pointer">
                         <div className="relative w-full h-48 sm:h-64">
                           <Image
@@ -91,35 +93,6 @@ export default function ProductsSlider({
                 ))}
               </Swiper>
             )}
-
-            {/* Custom navigation */}
-            <div className="custom-swiper-button-prev absolute top-4 left-6 z-10 hidden md:block">
-              <button className="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/40 transition">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="custom-swiper-button-next absolute top-4 right-6 z-10 hidden md:block">
-              <button className="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/40 transition">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
       </section>
@@ -154,8 +127,11 @@ export default function ProductsSlider({
             >
               {brands.map((brand) => (
                 <SwiperSlide key={brand.id}>
-                  {/* ✅ Pass brand name in query */}
-                  <Link href={`/Products?brand=${encodeURIComponent(brand.id)}`}>
+                  <Link
+                    href={`/Products?brandId=${brand.id}&brandName=${encodeURIComponent(
+                      brand.name
+                    )}`}
+                  >
                     <div className="flex justify-center items-center cursor-pointer hover:opacity-90 transition">
                       {brand.logo_url ? (
                         <Image
