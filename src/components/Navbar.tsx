@@ -36,8 +36,8 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-50 transition-transform duration-300
     ${hidden ? "-translate-y-full" : "translate-y-0"}`}
       >
-        {/* Frosted background behind everything */}
-        <div className="absolute inset-0 bg-transparent backdrop-blur-md z-0" />
+        {/* Gradient background behind frosted blur */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50] backdrop-blur-md z-0" />
 
         {/* Navbar content above the blur */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,7 +85,6 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-
 
       {/* Mobile full-screen overlay */}
       <div
