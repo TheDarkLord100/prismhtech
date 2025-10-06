@@ -43,7 +43,7 @@ export default function ProductDetailsPage() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="bg-white flex-1">
+      <main className="bg-[#F2F2F2] flex-1">
         <div className="max-w-6xl mx-auto px-6 py-10 mt-10">
           {/* Breadcrumb */}
           <div className="text-gray-600 mb-10 text-3xl text-start flex flex-wrap gap-2 items-center">
