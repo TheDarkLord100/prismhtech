@@ -22,11 +22,17 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch("/api/products", { cache: "no-store" });
-        const allProducts: Product[] = await res.json();
-        const product = allProducts.find((p) => p.id === id) || null;
+        // ✅ Fetch single product from /api/products/[id]
+        const res = await fetch(`/api/products/${id}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch product");
+        const product = await res.json();
+
         setMainProduct(product);
         if (product?.images?.length) setSelectedImage(product.images[0].image_url);
+
+        // ✅ Keep your existing related products logic unchanged
+        const relatedRes = await fetch("/api/products", { cache: "no-store" });
+        const allProducts: Product[] = await relatedRes.json();
         setRelatedProducts(allProducts.filter((p) => p.id !== id).slice(0, 3));
       } catch (error) {
         console.error(error);
@@ -47,7 +53,6 @@ export default function ProductDetailsPage() {
         <div className="max-w-6xl mx-auto px-6 py-10 mt-10">
           {/* Breadcrumb */}
           <div className="text-gray-600 mb-10 text-3xl text-start flex flex-wrap gap-2 items-center">
-            {/* Redirect to All Products page */}
             <span
               className="font-bold text-green-900 relative inline-block cursor-pointer hover:text-green-700"
               onClick={() => router.push("/Products")}
