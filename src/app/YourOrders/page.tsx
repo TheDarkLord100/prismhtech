@@ -5,24 +5,9 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import partner from "../../../public/partners/partner.png";
+import type { Order } from "@/types/entities";
+import type { OrderItem } from "@/types/entities";
 
-type OrderItem = {
-  id: number;
-  name: string;
-  image: string;
-  status: "Ordered" | "Shipped" | "Arriving";
-  statusDate: string;
-};
-
-type Order = {
-  orderId: string;
-  datePlaced: string;
-  total: string;
-  shipTo: string;
-  deliveryExpected?: string;
-  deliveredDate?: string;
-  items: OrderItem[];
-};
 
 const mockOrders: Order[] = [
   {

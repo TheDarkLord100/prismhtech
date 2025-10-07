@@ -6,13 +6,15 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Product } from "@/types/entities";
+import { Product, ProductImage } from "@/types/entities";
 
 export default function ProductDetailsPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const categoryOrBrand = searchParams.get("category") || searchParams.get("brand");
+
+  const categoryOrBrand =
+    searchParams.get("category") || searchParams.get("brand");
 
   const [mainProduct, setMainProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -22,23 +24,25 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        // ✅ Fetch single product from /api/products/[id]
+        if (!id) return;
+
         const res = await fetch(`/api/products/${id}`, { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to fetch product");
-        const product = await res.json();
+        if (!res.ok) throw new Error("Failed to fetch product details");
 
-        setMainProduct(product);
-        if (product?.images?.length) setSelectedImage(product.images[0].image_url);
+        const productData: Product = await res.json();
 
-        // ✅ Keep your existing related products logic unchanged
-        const relatedRes = await fetch("/api/products", { cache: "no-store" });
-        const allProducts: Product[] = await relatedRes.json();
-        setRelatedProducts(allProducts.filter((p) => p.id !== id).slice(0, 3));
+        setMainProduct(productData);
+        setRelatedProducts(productData.relatedProducts || []);
+
+        if (productData.productImages?.length) {
+          setSelectedImage(productData.productImages[0].image_url);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching product:", error);
       }
     };
-    if (id) fetchProduct();
+
+    fetchProduct();
   }, [id]);
 
   if (!mainProduct) return null;
@@ -65,7 +69,7 @@ export default function ProductDetailsPage() {
               <>
                 <span
                   className="font-bold text-green-900 relative inline-block cursor-pointer hover:text-green-700"
-                  onClick={() => router.back()} // go back 1 page
+                  onClick={() => router.back()}
                 >
                   {categoryOrBrand}
                   <span className="absolute left-0 bottom-0 w-full h-[3px] bg-yellow-400"></span>
@@ -73,7 +77,9 @@ export default function ProductDetailsPage() {
                 {" > "}
               </>
             )}
-            <span className="font-semibold text-gray-700">{mainProduct.name}</span>
+            <span className="font-semibold text-gray-700">
+              {mainProduct.name}
+            </span>
           </div>
 
           {/* Main Product Display */}
@@ -81,7 +87,11 @@ export default function ProductDetailsPage() {
             <div className="flex flex-col gap-4">
               <div className="relative w-[700px] h-[400px] rounded-2xl overflow-hidden">
                 <Image
-                  src={selectedImage || mainProduct.images?.[0].image_url || "/Assets/category1.png"}
+                  src={
+                    selectedImage ||
+                    mainProduct.productImages?.[0]?.image_url ||
+                    "/Assets/category1.png"
+                  }
                   alt={mainProduct.name}
                   fill
                   className="object-cover"
@@ -89,29 +99,37 @@ export default function ProductDetailsPage() {
               </div>
 
               <div className="flex gap-3">
-                {(mainProduct.images || ["/Assets/category1.png"]).map((img, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => setSelectedImage(img.image_url)}
-                    className={`relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${
-                      selectedImage === img.image_url
-                        ? "border-green-600"
-                        : "border-gray-200 hover:border-green-500"
-                    }`}
-                  >
-                    <Image
-                      src={img.image_url}
-                      alt={`${mainProduct.name} thumbnail ${idx}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
+                {(mainProduct.productImages || []).map(
+                  (img: ProductImage, idx: number) => (
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedImage(img.image_url)}
+                      className={`relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${
+                        selectedImage === img.image_url
+                          ? "border-green-600"
+                          : "border-gray-200 hover:border-green-500"
+                      }`}
+                    >
+                      <Image
+                        src={img.image_url}
+                        alt={
+                          img.alt_text ||
+                          `${mainProduct.name} thumbnail ${idx}`
+                        }
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
+            {/* Product Info */}
             <div className="flex flex-col gap-4">
-              <h1 className="text-3xl font-semibold text-green-500">{mainProduct.name}</h1>
+              <h1 className="text-3xl font-semibold text-green-500">
+                {mainProduct.name}
+              </h1>
               <p className="text-3xl font-bold bg-gradient-to-b from-green-900 to-green-400 bg-clip-text text-transparent">
                 ₹ {mainProduct.price} per Kg
               </p>
@@ -138,27 +156,35 @@ export default function ProductDetailsPage() {
                 </div>
 
                 <p className="text-gray-500 text-s mt-1">
-                  Total: <span className="font-semibold text-gray-500">₹ {total}</span>
+                  Total:{" "}
+                  <span className="font-semibold text-gray-500">₹ {total}</span>
                 </p>
               </div>
 
-              <button className="bg-yellow-400 text-white py-2 px-6 rounded-lg">Add to Cart</button>
+              <button className="bg-yellow-400 text-white py-2 px-6 rounded-lg">
+                Add to Cart
+              </button>
             </div>
           </div>
 
           {/* Product Details Accordion */}
           <div className="mt-8">
             <details className="bg-gray-100 p-4 rounded-md">
-              <summary className="cursor-pointer font-semibold">Product details</summary>
+              <summary className="cursor-pointer font-semibold">
+                Product details
+              </summary>
               <p className="mt-2 text-gray-700">
-                {mainProduct.description || "Detailed description of the product goes here."}
+                {mainProduct.description ||
+                  "Detailed description of the product goes here."}
               </p>
             </details>
           </div>
 
           {/* Relevant Products */}
           <div className="mt-10">
-            <h2 className="text-lg font-semibold text-yellow-500 mb-4">Relevant products</h2>
+            <h2 className="text-lg font-semibold text-yellow-500 mb-4">
+              Relevant products
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {relatedProducts.map((product) => (
                 <ProductCard
@@ -166,7 +192,10 @@ export default function ProductDetailsPage() {
                   key={product.id}
                   name={product.name}
                   price={product.price}
-                  img={product.images?.[0].image_url || "/Assets/category1.png"}
+                  img={
+                    product.productImages?.[0]?.image_url ||
+                    "/Assets/category1.png"
+                  }
                 />
               ))}
             </div>
