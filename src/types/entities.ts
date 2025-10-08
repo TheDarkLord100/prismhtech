@@ -7,22 +7,41 @@ export interface Variant {
   quantity: number | null;
 }
 
+export type OrderItem = {
+  id: number;
+  name: string;
+  image: string;
+  status: "Ordered" | "Shipped" | "Arriving";
+  statusDate: string;
+};
+
+export type Order = {
+  orderId: string;
+  datePlaced: string;
+  total: string;
+  shipTo: string;
+  deliveryExpected?: string;
+  deliveredDate?: string;
+  items: OrderItem[];
+};
+
 export interface ProductImage {
   id: string;
   image_url: string;
   alt_text?: string;
   priority?: number;
-}
+};
 
 export interface Product {
   id: string;
   name: string;
-  description: string;
-  images: ProductImage[]; 
+  description?: string;
+  productImages: ProductImage[];  // rename images -> productImages
   priceType: "fixed" | "variable";
   price: number;
   variants?: Variant[];
-}
+  relatedProducts?: Product[];    // optional array
+};
 
 export interface Category {
   id: string;
