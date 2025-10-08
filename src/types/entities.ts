@@ -1,7 +1,10 @@
 export interface Variant {
-  id: string;
-  name: string; 
-  price?: number; 
+  pvr_id: string;           // UUID
+  created_at: string;       // ISO timestamp
+  product_id: string | null;
+  name: string | null;
+  price: number | null;
+  quantity: number | null;
 }
 
 export interface ProductImage {
@@ -44,3 +47,19 @@ export interface User {
   created_at?: string;     
   email_verified?: boolean;
 }
+
+export interface Cart {
+  id: string; // UUID
+  created_at: string; // ISO timestamp
+  user_id?: string | null; // nullable UUID
+}
+
+export interface CartItem {
+  id: string; // UUID
+  created_at: string; // ISO timestamp
+  cart_id?: string | null;
+  product_id?: string | null;
+  variant_id?: string | null;
+  quantity: number;
+}
+
