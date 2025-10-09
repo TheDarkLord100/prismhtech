@@ -24,7 +24,7 @@ export default function AddressesPage() {
         <div className="flex flex-wrap gap-6 justify-start max-w-7xl mx-auto">
           {/* Add New Address */}
           <div className="flex flex-col justify-center items-center w-80 h-80 border-2 border-dashed border-gray-400 rounded-2xl bg-white hover:bg-gray-50 cursor-pointer transition">
-            <span className="text-5xl text-gray-400">+</span>
+            <span className="text-8xl text-gray-400">+</span>
             <p className="text-lg font-medium mt-2 text-gray-700">
               Your Addresses
             </p>
