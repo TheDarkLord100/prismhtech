@@ -6,7 +6,10 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Product, ProductImage } from "@/types/entities";
+import { Product, ProductImage, Variant } from "@/types/entities";
+import { useCartStore } from "@/utils/store/useCartStore";
+import { notify, Notification } from "@/utils/notify";
+
 
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +23,8 @@ export default function ProductDetailsPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const { cart, addToCart, loading, updateCartItem } = useCartStore();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -29,10 +34,18 @@ export default function ProductDetailsPage() {
         const res = await fetch(`/api/products/${id}`, { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch product details");
 
-        const productData: Product = await res.json();
+        const productData: Product & {
+          relatedProducts: Product[];
+        } = await res.json();
+
+        console.log("Fetched product data:", productData);
 
         setMainProduct(productData);
         setRelatedProducts(productData.relatedProducts || []);
+
+        if (productData.ProductVariants?.length) {
+          setSelectedVariant(productData.ProductVariants[0]);
+        }
 
         if (productData.productImages?.length) {
           setSelectedImage(productData.productImages[0].image_url);
@@ -47,7 +60,15 @@ export default function ProductDetailsPage() {
 
   if (!mainProduct) return null;
 
-  const total = (mainProduct.price * quantity).toFixed(1);
+  const price = selectedVariant?.price ?? mainProduct.price ?? 0;
+
+  const total = (price * quantity).toFixed(2);
+
+  const currentCartItem = cart?.items?.find(
+    (item) =>
+      item.product_id === mainProduct.id &&
+      item.variant_id === selectedVariant?.pvr_id
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -104,11 +125,10 @@ export default function ProductDetailsPage() {
                     <div
                       key={idx}
                       onClick={() => setSelectedImage(img.image_url)}
-                      className={`relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${
-                        selectedImage === img.image_url
-                          ? "border-green-600"
-                          : "border-gray-200 hover:border-green-500"
-                      }`}
+                      className={`relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${selectedImage === img.image_url
+                        ? "border-green-600"
+                        : "border-gray-200 hover:border-green-500"
+                        }`}
                     >
                       <Image
                         src={img.image_url}
@@ -125,45 +145,79 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
+            {mainProduct.ProductVariants?.length ? (
+              <div className="flex flex-wrap gap-3 mt-4">
+                {mainProduct.ProductVariants.map((variant) => (
+                  <div
+                    key={variant.pvr_id}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={`px-4 py-2 rounded-lg cursor-pointer border-2 transition select-none ${selectedVariant?.pvr_id === variant.pvr_id
+                      ? "border-green-600 bg-green-50"
+                      : "border-gray-200 hover:border-green-400"
+                      }`}
+                  >
+                    {variant.name || "Unnamed Variant"}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
             {/* Product Info */}
             <div className="flex flex-col gap-4">
               <h1 className="text-3xl font-semibold text-green-500">
                 {mainProduct.name}
               </h1>
               <p className="text-3xl font-bold bg-gradient-to-b from-green-900 to-green-400 bg-clip-text text-transparent">
-                ₹ {mainProduct.price} per Kg
+                ₹ {selectedVariant?.price ?? mainProduct.price ?? 0}
               </p>
 
-              <div className="flex flex-col justify-start items-start">
-                <div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
+              <div className="flex flex-col items-start gap-3">
+                {currentCartItem && currentCartItem.quantity === 0 ?
+                  <><div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
+                    <button
+                      onClick={() =>
+                        updateCartItem(
+                          currentCartItem.id,
+                          Math.max(0, currentCartItem.quantity - 1)
+                        )
+                      }
+                      className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
+                    >
+                      -
+                    </button>
+
+                    <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none mx-2">
+                      {currentCartItem.quantity}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        updateCartItem(
+                          currentCartItem.id,
+                          currentCartItem.quantity + 1
+                        )
+                      }
+                      className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
+                    >
+                      +
+                    </button>
+                  </div>
+                    <p className="text-gray-500 text-s">
+                      In cart: <span className="font-semibold">{currentCartItem.quantity}</span>
+                    </p></>
+                  :
                   <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
+                    onClick={() =>
+                      addToCart(mainProduct, selectedVariant!, quantity)
+                    }
+                    disabled={loading}
+                    className="bg-yellow-400 text-white py-2 px-6 rounded-lg font-semibold"
                   >
-                    -
+                    {loading ? "Adding..." : "Add to Cart"}
                   </button>
-
-                  <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none mx-2">
-                    {quantity}
-                  </span>
-
-                  <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <p className="text-gray-500 text-s mt-1">
-                  Total:{" "}
-                  <span className="font-semibold text-gray-500">₹ {total}</span>
-                </p>
+                }
               </div>
 
-              <button className="bg-yellow-400 text-white py-2 px-6 rounded-lg">
-                Add to Cart
-              </button>
             </div>
           </div>
 

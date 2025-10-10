@@ -39,7 +39,7 @@ export interface Product {
   productImages: ProductImage[];  // rename images -> productImages
   priceType: "fixed" | "variable";
   price: number;
-  variants?: Variant[];
+  ProductVariants?: Variant[];
   relatedProducts?: Product[];    // optional array
 };
 
@@ -68,17 +68,22 @@ export interface User {
 }
 
 export interface Cart {
-  id: string; // UUID
-  created_at: string; // ISO timestamp
-  user_id?: string | null; // nullable UUID
+  id: string; 
 }
 
 export interface CartItem {
-  id: string; // UUID
-  created_at: string; // ISO timestamp
+  id: string;
   cart_id?: string | null;
   product_id?: string | null;
   variant_id?: string | null;
   quantity: number;
 }
 
+export interface CartItemDetails extends CartItem {
+  product: Product;
+  variant: Variant;
+}
+
+export interface CartWithItems extends Cart {
+  items: CartItemDetails[];
+}
