@@ -242,14 +242,8 @@ export default function ProductDetailsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {relatedProducts.map((product) => (
                 <ProductCard
-                  id={product.id}
+                  product={product}
                   key={product.id}
-                  name={product.name}
-                  price={product.price}
-                  img={
-                    product.productImages?.[0]?.image_url ||
-                    "/Assets/category1.png"
-                  }
                 />
               ))}
             </div>

@@ -2,13 +2,25 @@
 
 import { useEffect } from "react";
 import { useUserStore } from "@/utils/store/userStore";
+import { useCartStore } from "@/utils/store/useCartStore";
 
-export default function UserProvider({ children }: { children: React.ReactNode }) {
+export default function GlobalProvider({ children }: { children: React.ReactNode }) {
   const fetchUser = useUserStore((s) => s.fetchUser);
+  const { fetchCart, clearCart } = useCartStore();
 
-  useEffect(() => {
-    fetchUser(); // runs once on app load
-  }, [fetchUser]);
+  useEffect(() => { 
+    const init = async () => {
+      await fetchUser();
+      const currentUser = useUserStore.getState().user;
+      if (currentUser) {
+        await fetchCart();
+      } else {
+        clearCart();
+      }
+    };
+
+    init();
+  }, []);
 
   return <>{children}</>;
 }

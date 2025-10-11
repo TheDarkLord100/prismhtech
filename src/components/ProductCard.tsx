@@ -2,28 +2,27 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/app/context/CartContext";
+import { useCartStore } from "@/utils/store/useCartStore";
+import type { Product } from "@/types/entities";
 
 type ProductCardProps = {
-  id: string;
-  name: string;
-  price: number;
-  img: string;
+  product: Product
   onClick?: () => void;
 };
 
-export default function ProductCard({ id, name, price, img, onClick }: ProductCardProps) {
+export default function ProductCard({ product, onClick }: ProductCardProps) {
   const router = useRouter();
-  const { items, addToCart, updateQty } = useCart();
+  const { addToCart, cart, updateCartItem } = useCartStore();
 
-  const itemInCart = items.find((p) => p.id === id);
-  const qty = itemInCart?.qty || 0;
+  console.log("Cart in ProductCard:", cart);
 
+  const itemPresentInCart = cart?.items?.find((item) => item.product.id === product.id) || null;
+  console.log("Item present in cart:", itemPresentInCart);
   const handleClick = () => {
     if (onClick) {
       onClick();
     } else {
-      router.push(`/ProductDetails/${id}`);
+      router.push(`/ProductDetails/${product.id}`);
     }
   };
 
@@ -35,45 +34,43 @@ export default function ProductCard({ id, name, price, img, onClick }: ProductCa
     >
       <div className="px-3 pt-3 pb-1">
         <div className="relative w-full h-[200px]">
-          {img ? (
-            <Image src={img} alt={name} fill className="object-cover rounded-xl" />
-          ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-xl">
-              <span className="text-gray-500">No Image</span>
-            </div>
-          )}
+          <Image src={product.productImages?.[0].image_url ?? "/Assets/category1.png"} alt={product.name} fill className="object-cover rounded-xl" />
         </div>
       </div>
 
       <div className="flex h-[85px]">
-        {/* Title + Price */}
         <div className="w-[60%] px-3 py-2 flex flex-col justify-center">
-          <h3 className="text-gray-800 text-sm font-medium">{name}</h3>
-          <p className="text-gray-900 text-lg font-bold mt-1">₹ {price} per Kg</p>
+          <h3 className="text-gray-800 text-sm font-medium">{product.name}</h3>
+          <p className="text-gray-900 text-lg font-bold mt-1">₹ {product.price} per Kg</p>
         </div>
 
         <div className="w-px bg-gray-300" />
 
-        {/* Qty / Add */}
         <div className="w-[40%] px-2 py-2 flex flex-col justify-center items-center">
-          {qty > 0 ? (
+          {itemPresentInCart ? (
             <div
               className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
             >
               <button
-                onClick={() => updateQty(id, Math.max(qty - 1, 0))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateCartItem(itemPresentInCart.id, itemPresentInCart.quantity - 1);
+                }}
                 className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
               >
                 -
               </button>
 
               <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none">
-                {qty}
+                {itemPresentInCart.quantity}
               </span>
 
               <button
-                onClick={() => addToCart({ id, name, price, img })}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateCartItem(itemPresentInCart.id, itemPresentInCart.quantity + 1);
+                }}
+
                 className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
               >
                 +
@@ -83,7 +80,7 @@ export default function ProductCard({ id, name, price, img, onClick }: ProductCa
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                addToCart({ id, name, price, img, qty: 1 });
+                addToCart(product, product.ProductVariants[0], 1);
               }}
               className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-md shadow"
             >

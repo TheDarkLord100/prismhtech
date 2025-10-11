@@ -39,7 +39,7 @@ export interface Product {
   productImages: ProductImage[];  // rename images -> productImages
   priceType: "fixed" | "variable";
   price: number;
-  ProductVariants?: Variant[];
+  ProductVariants: Variant[];
   relatedProducts?: Product[];    // optional array
 };
 

@@ -10,12 +10,12 @@ import type {
   CartItemDetails,
   CartWithItems
 } from "@/types/entities";
-import { clear } from "console";
 
 interface CartStore {
   cart : CartWithItems | null;
   loading: boolean;
   error: string | null;
+  message?: string | null;
 
   addToCart: (product: Product, variant: Variant, quantity: number) => Promise<void>;
   updateCartItem: (cartItemId: string, quantity: number) => Promise<void>;
@@ -34,6 +34,7 @@ export const useCartStore = create<CartStore>()(
       cart: null,
       loading: false,
       error: null,
+      message: null,
 
       addToCart: async (product, variant, quantity) => {
           set({ loading: true, error: null });
@@ -50,7 +51,7 @@ export const useCartStore = create<CartStore>()(
             if (!response.ok) throw new Error("Failed to add item to cart");
 
             const cart = await response.json();
-            set({ cart, loading: false });
+            set({ cart, loading: false, message: "Item added to cart" });
           } catch(error: any){
             set({ loading: false, error: error.message });
           }
@@ -76,7 +77,7 @@ export const useCartStore = create<CartStore>()(
             if (!response.ok) throw new Error("Failed to update cart item");
 
             const cart = await response.json();
-            set({ cart, loading: false });
+            set({ cart, loading: false, message: "Cart updated successfully" });
 
         } catch(error: any){
             set({ loading: false, error: error.message });
@@ -96,7 +97,7 @@ export const useCartStore = create<CartStore>()(
             if (!response.ok) throw new Error("Failed to remove item from cart");
 
             const cart = await response.json();
-            set({ cart, loading: false });
+            set({ cart, loading: false, message: "Item removed from cart" });
         } catch(error: any){
             set({ loading: false, error: error.message });
           }
@@ -117,7 +118,7 @@ export const useCartStore = create<CartStore>()(
             if (!response.ok) throw new Error("Failed to clear cart");
 
             const cart = await response.json();
-            set({ cart, loading: false });
+            set({ cart, loading: false, message: "Cart cleared successfully" });
           } catch(error: any){
             set({ loading: false, error: error.message });
           }
