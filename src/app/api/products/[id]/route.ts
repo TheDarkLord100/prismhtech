@@ -27,7 +27,8 @@ export async function GET(
       .from("RelatedProducts")
       .select(`id, related_product:related_product_id (
         *, 
-        productImages (id, image_url, alt_text, priority)
+        productImages (id, image_url, alt_text, priority),
+        ProductVariants (pvr_id, name, price, quantity)
         )`)
       .eq("product_id", id);
 

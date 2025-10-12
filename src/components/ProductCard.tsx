@@ -14,10 +14,10 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   const router = useRouter();
   const { addToCart, cart, updateCartItem } = useCartStore();
 
-  console.log("Cart in ProductCard:", cart);
+  // console.log("Cart in ProductCard:", cart);
 
   const itemPresentInCart = cart?.items?.find((item) => item.product.id === product.id) || null;
-  console.log("Item present in cart:", itemPresentInCart);
+  // console.log("Item present in cart:", itemPresentInCart);
   const handleClick = () => {
     if (onClick) {
       onClick();

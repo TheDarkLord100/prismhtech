@@ -8,7 +8,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Product, ProductImage, Variant } from "@/types/entities";
 import { useCartStore } from "@/utils/store/useCartStore";
-import { notify, Notification } from "@/utils/notify";
 
 
 export default function ProductDetailsPage() {
@@ -24,7 +23,9 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
-  const { cart, addToCart, loading, updateCartItem } = useCartStore();
+  const { cart, addToCart, updateCartItem } = useCartStore();
+  const itemInCart = cart?.items?.find((item) => item.product.id === id && item.variant.pvr_id === selectedVariant?.pvr_id) || null;
+  console.log("Current cart item:", itemInCart);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -63,12 +64,6 @@ export default function ProductDetailsPage() {
   const price = selectedVariant?.price ?? mainProduct.price ?? 0;
 
   const total = (price * quantity).toFixed(2);
-
-  const currentCartItem = cart?.items?.find(
-    (item) =>
-      item.product_id === mainProduct.id &&
-      item.variant_id === selectedVariant?.pvr_id
-  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -174,14 +169,16 @@ export default function ProductDetailsPage() {
               </p>
 
               <div className="flex flex-col items-start gap-3">
-                {currentCartItem && currentCartItem.quantity === 0 ?
+                {itemInCart ?
                   <><div className="flex items-center bg-gradient-to-b from-green-800 to-green-400 rounded-md overflow-hidden">
                     <button
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         updateCartItem(
-                          currentCartItem.id,
-                          Math.max(0, currentCartItem.quantity - 1)
+                          itemInCart.id,
+                          itemInCart.quantity - 1
                         )
+                      }
                       }
                       className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
                     >
@@ -189,14 +186,14 @@ export default function ProductDetailsPage() {
                     </button>
 
                     <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none mx-2">
-                      {currentCartItem.quantity}
+                      {itemInCart.quantity}
                     </span>
 
                     <button
                       onClick={() =>
                         updateCartItem(
-                          currentCartItem.id,
-                          currentCartItem.quantity + 1
+                          itemInCart.id,
+                          itemInCart.quantity + 1
                         )
                       }
                       className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm"
@@ -204,18 +201,18 @@ export default function ProductDetailsPage() {
                       +
                     </button>
                   </div>
-                    <p className="text-gray-500 text-s">
-                      In cart: <span className="font-semibold">{currentCartItem.quantity}</span>
-                    </p></>
+                    {/* <p className="text-gray-500 text-s">
+                      In cart: <span className="font-semibold">{itemInCart.quantity}</span>
+                    </p></> */}
+                  </>
                   :
                   <button
                     onClick={() =>
                       addToCart(mainProduct, selectedVariant!, quantity)
                     }
-                    disabled={loading}
                     className="bg-yellow-400 text-white py-2 px-6 rounded-lg font-semibold"
                   >
-                    {loading ? "Adding..." : "Add to Cart"}
+                    Add to Cart
                   </button>
                 }
               </div>
