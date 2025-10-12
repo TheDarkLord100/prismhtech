@@ -106,7 +106,7 @@ export default function ProductDetailsPage() {
           {/* Main Product Display */}
           <div className="flex flex-col md:flex-row items-start gap-10">
             <div className="flex flex-col gap-4">
-              <div className="relative w-[700px] h-[400px] rounded-2xl overflow-hidden">
+              <div className="relative w-full max-w-[700px] aspect-[16/9] rounded-2xl overflow-hidden mx-auto">
                 <Image
                   src={
                     selectedImage ||
@@ -115,7 +115,9 @@ export default function ProductDetailsPage() {
                   }
                   alt={mainProduct.name}
                   fill
-                  className="object-cover"
+                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 700px"
+                  priority
                 />
               </div>
 

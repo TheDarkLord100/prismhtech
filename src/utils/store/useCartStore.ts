@@ -10,9 +10,10 @@ import type {
   CartItemDetails,
   CartWithItems
 } from "@/types/entities";
+import { useUserStore } from "./userStore";
 
 interface CartStore {
-  cart : CartWithItems | null;
+  cart: CartWithItems | null;
   loading: boolean;
   error: string | null;
   message?: string | null;
@@ -37,111 +38,155 @@ export const useCartStore = create<CartStore>()(
       message: null,
 
       addToCart: async (product, variant, quantity) => {
-          set({ loading: true, error: null });
-          try{
-            const response = await fetch(`/api/cart/item`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "include",
-              body: JSON.stringify({ product_id: product.id, variant_id: variant.pvr_id, quantity })
-            });
+        set({ loading: true, error: null });
 
-            if (!response.ok) throw new Error("Failed to add item to cart");
+        const { user } = useUserStore.getState();
+        const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
+        if (!user) {
+          const localCart = cart;
+          localCart?.items.push({
+            id: `local-${Date.now()}`,
+            product,
+            variant,
+            quantity,
+          });
+          set({ cart: localCart, loading: false, message: "Item added to cart" });
+          return;
+        }
+        try {
+          const response = await fetch(`/api/cart/item`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({ product_id: product.id, variant_id: variant.pvr_id, quantity })
+          });
 
-            const cart = await response.json();
-            set({ cart, loading: false, message: "Item added to cart" });
-          } catch(error: any){
-            set({ loading: false, error: error.message });
-          }
+          if (!response.ok) throw new Error("Failed to add item to cart");
+
+          const cart = await response.json();
+          set({ cart, loading: false, message: "Item added to cart" });
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
       },
 
       updateCartItem: async (CartItemId, quantity) => {
         const { removeFromCart } = get();
-        console.log("Update cart item:", CartItemId, quantity);
-            if(quantity === 0) {
-              return await removeFromCart(CartItemId);
-            }
-        try {
-            set({ loading: true, error: null });
+        const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
+        const { user } = useUserStore.getState();
 
-            const response = await fetch(`/api/cart/item/${CartItemId}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "include",
-              body: JSON.stringify({ quantity })
-            });
-            if (!response.ok) throw new Error("Failed to update cart item");
+        if (quantity === 0) {
+          return await removeFromCart(CartItemId);
+        }
 
-            const cart = await response.json();
-            set({ cart, loading: false, message: "Cart updated successfully" });
-
-        } catch(error: any){
-            set({ loading: false, error: error.message });
+        if (!user) {
+          const localCart = cart;
+          const itemIndex = localCart?.items.findIndex(item => item.id === CartItemId);
+          if (itemIndex !== undefined && itemIndex > -1 && localCart) {
+            localCart.items[itemIndex].quantity = quantity;
+            set({ cart: localCart, loading: false, message: "Cart updated successfully" });
           }
+        }
+
+        try {
+          set({ loading: true, error: null });
+
+          const response = await fetch(`/api/cart/item/${CartItemId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({ quantity })
+          });
+          if (!response.ok) throw new Error("Failed to update cart item");
+
+          const cart = await response.json();
+          set({ cart, loading: false, message: "Cart updated successfully" });
+
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
       },
 
       removeFromCart: async (CartItemId) => {
-        try{
-            set({ loading: true, error: null });
-            const response = await fetch(`/api/cart/item/${CartItemId}`, {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "include",
-            });
-            if (!response.ok) throw new Error("Failed to remove item from cart");
+        const { user } = useUserStore.getState();
+        const { cart } = get();
+        if (!user) {
+          const localCart = cart;
+          const updatedItems = localCart?.items.filter(item => item.id !== CartItemId) || [];
+          localCart!.items = updatedItems;
+          set({ cart: localCart, loading: false, message: "Item removed from cart" });
+          return;
+        }
+        try {
+          set({ loading: true, error: null });
+          const response = await fetch(`/api/cart/item/${CartItemId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+          });
+          if (!response.ok) throw new Error("Failed to remove item from cart");
 
-            const cart = await response.json();
-            set({ cart, loading: false, message: "Item removed from cart" });
-        } catch(error: any){
-            set({ loading: false, error: error.message });
-          }
+          const cart = await response.json();
+          set({ cart, loading: false, message: "Item removed from cart" });
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
       },
 
       clearCart: async () => {
+        const { user } = useUserStore.getState();
+        const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
+
+        if (!user) {
+          cart.items = [];
+          set({ cart, loading: false, message: "Cart cleared successfully" });
+          return;
+        }
+
         set({ loading: true, error: null });
-          try{
-            const response = await fetch(`/api/cart/item`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "include",
-              body: JSON.stringify({ clear: true })
-            });
+        try {
+          const response = await fetch(`/api/cart/item`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({ clear: true })
+          });
 
-            if (!response.ok) throw new Error("Failed to clear cart");
+          if (!response.ok) throw new Error("Failed to clear cart");
 
-            const cart = await response.json();
-            set({ cart, loading: false, message: "Cart cleared successfully" });
-          } catch(error: any){
-            set({ loading: false, error: error.message });
-          }
+          const cart = await response.json();
+          set({ cart, loading: false, message: "Cart cleared successfully" });
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
       },
 
       fetchCart: async () => {
-        set({ loading: true, error: null });
-          try{
-            const response = await fetch(`/api/cart`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "include",
-            });
+        set({ loading: true, error: null, cart: null });
+        try {
+          const response = await fetch(`/api/cart`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+          });
 
-            if (!response.ok) throw new Error("Failed to add item to cart");
+          if (!response.ok) throw new Error("Failed to add item to cart");
 
-            const cart = await response.json();
-            set({ cart, loading: false });
-          } catch(error: any){
-            set({ loading: false, error: error.message });
-          }
+          const cart = await response.json();
+          set({ cart, loading: false });
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
 
       },
 
@@ -158,7 +203,7 @@ export const useCartStore = create<CartStore>()(
           const price = item.variant?.price ?? item.product.price ?? 0;
           return sum + price * item.quantity;
         }
-        , 0);
+          , 0);
       }
     }),
     {
