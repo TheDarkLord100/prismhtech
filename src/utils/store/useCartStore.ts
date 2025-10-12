@@ -23,10 +23,9 @@ interface CartStore {
   removeFromCart: (id: string) => Promise<void>;
   clearCart: () => Promise<void>;
   fetchCart: () => Promise<void>;
-
-  totalItems: number;
-  totalPrice: number;
-
+  
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -190,21 +189,20 @@ export const useCartStore = create<CartStore>()(
 
       },
 
-      get totalItems() {
+      getTotalItems: () => {
         const cart = get().cart;
         if (!cart || !cart.items) return 0;
         return cart.items.reduce((sum, item) => sum + item.quantity, 0);
       },
 
-      get totalPrice() {
+      getTotalPrice: () => {
         const cart = get().cart;
         if (!cart || !cart.items) return 0;
         return cart.items.reduce((sum, item) => {
-          const price = item.variant?.price ?? item.product.price ?? 0;
+          const price = item.variant?.price ?? item.product?.price ?? 0;
           return sum + price * item.quantity;
-        }
-          , 0);
-      }
+        }, 0);
+      },
     }),
     {
       name: "cart-storage", // persist in localStorage

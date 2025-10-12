@@ -18,7 +18,7 @@ export async function GET(request: Request) {
         const { data: cartItems, error: itemsError } = await supabase
             .from("cartItems")
             .select(`*,
-                product:products(*),
+                product:products(*, productImages(*)),
                 variant:ProductVariants(*)`)
             .eq("cart_id", cart.id);
 

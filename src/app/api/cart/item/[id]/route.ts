@@ -25,7 +25,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         const { data: cartItems, error: itemsError } = await supabase
             .from("cartItems")
             .select(`*,
-                product:products(*),
+                product:products(*, productImages(*)),
                 variant:ProductVariants(*)`)
             .eq("cart_id", cart.id);
 
@@ -70,7 +70,7 @@ export async function PUT(
         const { data: cartItems, error: itemsError } = await supabase
             .from("cartItems")
             .select(`*,
-                product:products(*),
+                product:products(*, productImages(*)),
                 variant:ProductVariants(*)`)
             .eq("cart_id", cart.id);
         
