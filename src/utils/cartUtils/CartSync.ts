@@ -1,6 +1,6 @@
-import { createClient } from "./supabase/client";
+import { createClient } from "@/utils/supabase/client";
 import type { CartWithItems } from "@/types/entities";
-import { useUserStore } from "./store/userStore";
+import { useUserStore } from "@/utils/store/userStore";
 
 export const syncCartWithServer = async (cart: CartWithItems) => {
     if (!cart || cart.items.length === 0) return;

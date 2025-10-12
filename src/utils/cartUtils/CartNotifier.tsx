@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { useCartStore } from "./store/useCartStore";
-import { notify, Notification } from "./notify";
+import { useCartStore } from "@/utils/store/useCartStore";
+import { notify, Notification } from "@/utils/notify";
 
 export default function CartNotifier() {
     const { error, message, loading } = useCartStore();

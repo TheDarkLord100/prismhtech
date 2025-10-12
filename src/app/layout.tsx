@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import GlobalProvider from "@/Providers/GlobalProvider";
-import CartNotifier from "@/utils/CartNotifier";
+import CartNotifier from "@/utils/cartUtils/CartNotifier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useUserStore } from "@/utils/store/userStore";
 import { useCartStore } from "@/utils/store/useCartStore";
-import { syncCartWithServer } from "@/utils/CartSync";
+import { syncCartWithServer } from "@/utils/cartUtils/CartSync";
 
 export default function GlobalProvider({ children }: { children: React.ReactNode }) {
   const fetchUser = useUserStore((s) => s.fetchUser);
