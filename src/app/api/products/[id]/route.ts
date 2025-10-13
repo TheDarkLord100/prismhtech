@@ -3,14 +3,13 @@ import { cookies } from "next/headers";
 import { createClient } from "../../../../utils/supabase/server";
 import type { Product, Variant, ProductImage } from "@/types/entities";
 
-// GET Single Product by ID
 export async function GET(
   request: Request,
-  context: any
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = createClient(cookies());
-    const { id } = context.params;
+    const { id } = await params;
 
     const { data, error } = await supabase
       .from("products")

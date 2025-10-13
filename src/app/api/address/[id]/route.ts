@@ -3,8 +3,9 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import type { Address } from "@/types/entities";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const supabase = createClient(cookies());
+    const id = (await params).id;
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,7 +15,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         const { data: updatedAddress, error: updateError } = await supabase
             .from("Addresses")
             .update(body)
-            .eq("adr_id", params.id)
+            .eq("adr_id", id)
             .select()
             .single();
 
@@ -29,7 +30,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const id = (await params).id;
     const supabase = createClient(cookies());
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -39,7 +41,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         const { data: deletedAddress, error: deleteError } = await supabase
             .from("Addresses")
             .delete()
-            .eq("adr_id", params.id)
+            .eq("adr_id", id)
             .select()
             .single();
         if (deleteError) {
@@ -53,7 +55,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+    const id = (await params).id;   
     const { searchParams } = new URL(request.url);
     const setDefault = searchParams.get("setDefault") === "true";
     const supabase = createClient(cookies());
@@ -75,7 +78,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         const { data: address, error: updateError } = await supabase
             .from("Addresses")
             .update({ default: true })
-            .eq("adr_id", params.id)
+            .eq("adr_id", id)
             .eq("user_id", user.id)
             .select()
             .single();

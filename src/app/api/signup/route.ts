@@ -2,15 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server"; 
 import { cookies } from "next/headers";
 
-// Define the expected request body
 interface SignupRequestBody {
   email: string;
   password: string;
   name: string;
   phone: string;
-  dob: string;       // adjust to Date if you want real date parsing
+  dob: string;       
   location: string;
-  gstin?: string;    // optional
+  gstin?: string;    
 }
 
 export async function POST(req: Request) {
@@ -52,7 +51,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, user: authData.user });
   } catch (err: unknown) {
-    // ✅ no more `any`
     if (err instanceof Error) {
       console.error("Signup error:", err.message);
     } else {

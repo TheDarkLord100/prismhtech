@@ -3,9 +3,9 @@ import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { getUserCart } from "../../utils/getUserCart";
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const supabase = createClient(cookies());
-    const { id } = params;
+    const { id } = await params;
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -42,10 +42,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const supabase = createClient(cookies());
-    const { id } = params;
+    const { id } = await params;
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
