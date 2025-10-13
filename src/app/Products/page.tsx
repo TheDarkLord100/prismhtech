@@ -180,15 +180,20 @@ export default function ProductsPage() {
               {visibleProducts.map((p) => (
                 <div key={p.id} className="flex justify-center">
                   <ProductCard
-                    name={p.name}
-                    id={p.id}
-                    price={p.price}
-                    img={p.images?.[0].image_url || "/Assets/category1.png"}
-                    onClick={() =>
-                      router.push(
-                        `/ProductDetails/${p.id}?category=${categoryName || ""}&brand=${brandName || ""}`
-                      )
-                    }
+                  product={p}
+                    onClick={() => {
+                      if (categoryName) {
+                        router.push(
+                          `/ProductDetails/${p.id}?category=${categoryName}`
+                        );
+                      } else if(brandName) {
+                        router.push(
+                          `/ProductDetails/${p.id}?brand=${brandName}`
+                        );
+                      } else {
+                        router.push(`/ProductDetails/${p.id}`);
+                      }
+                    }}
                   />
                 </div>
               ))}

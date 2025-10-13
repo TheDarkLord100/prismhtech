@@ -1,30 +1,33 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "../../../../utils/supabase/server";
-import type { Product } from "@/types/entities";
+import type { Product, Variant, ProductImage } from "@/types/entities";
 
-// GET Single Product by ID
 export async function GET(
   request: Request,
-  context: any
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = createClient(cookies());
-    const { id } = context.params;
+    const { id } = await params;
 
     const { data, error } = await supabase
       .from("products")
-      .select(`*, productImages (id, image_url, alt_text, priority)`)
+      .select(`
+        *, 
+        productImages (id, image_url, alt_text, priority),
+        ProductVariants (pvr_id, name, price, quantity)`)
       .eq("id", id)
-      .single<Product>();
+      .single<Product & { productImages: ProductImage[], ProductVariants: Variant[] }>();
 
     if (error) throw error;
 
-    const {data: relatedProducts, error: relatedError} = await supabase
+    const { data: relatedProducts, error: relatedError } = await supabase
       .from("RelatedProducts")
       .select(`id, related_product:related_product_id (
         *, 
-        productImages (id, image_url, alt_text, priority)
+        productImages (id, image_url, alt_text, priority),
+        ProductVariants (pvr_id, name, price, quantity)
         )`)
       .eq("product_id", id);
 

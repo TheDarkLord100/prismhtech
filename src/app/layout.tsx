@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import { CartProvider } from "@/app/context/CartContext";
-import UserProvider from "@/Providers/UserProvider"; // ✅ import UserProvider
+import GlobalProvider from "@/Providers/GlobalProvider";
+import CartNotifier from "@/utils/cartUtils/CartNotifier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +33,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <CartProvider>
-          <UserProvider>
+          <GlobalProvider>
             <Toaster position="top-right" />
+            <CartNotifier />
             {children}
-          </UserProvider>
-        </CartProvider>
+          </GlobalProvider>
       </body>
     </html>
   );

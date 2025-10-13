@@ -4,24 +4,20 @@
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { useCart } from "@/app/context/CartContext"; // now includes savedItems
+import { useCartStore } from "@/utils/store/useCartStore";
 
 export default function CartPage() {
-  const {
-    items,
-    updateQty,
-    toggleCheck,
+  const { 
+    cart, 
     removeFromCart,
-    addToCart,
-    savedItems,
-    addSavedItem,
-    removeSavedItem,
-    moveSavedToCart,
-  } = useCart();
+    updateCartItem,
+    getTotalItems,
+    getTotalPrice
+  } = useCartStore();
 
-  // Total qty & subtotal of checked items
-  const totalQuantity = items.filter((i) => i.checked).reduce((acc, i) => acc + i.qty, 0);
-  const subtotal = items.filter((i) => i.checked).reduce((acc, i) => acc + i.price * i.qty, 0);
+  const items = cart?.items || [];
+  const totalItems = getTotalItems();
+  const totalPrice = getTotalPrice();
 
   return (
     <>
@@ -34,8 +30,8 @@ export default function CartPage() {
             <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
               <h2 className="text-4xl font-bold mb-3">Your Cart</h2>
 
-              <div className="flex justify-between items-center pb-3 border-b border-gray-300">
-                <p className="text-sm text-blue-600 cursor-pointer">Select all Items</p>
+              <div className="flex justify-end items-center pb-3 border-b border-gray-300">
+                {/* <p className="text-sm text-blue-600 cursor-pointer">Select all Items</p> */}
                 <span className="text-sm font-medium text-blue-600">Price</span>
               </div>
 
@@ -45,25 +41,17 @@ export default function CartPage() {
                   <div key={item.id} className="flex justify-between items-start gap-4 py-4">
                     {/* Left Section */}
                     <div className="flex gap-4">
-                      {/* Checkbox */}
-                      <input
-                        type="checkbox"
-                        checked={!!item.checked}
-                        onChange={() => toggleCheck(item.id)}
-                        className="w-5 h-5 accent-purple-600 mt-2"
-                      />
-
                       {/* Image */}
                       <div className="relative w-28 h-24 rounded-md overflow-hidden border">
-                        <Image src={item.img} alt={item.name} fill className="object-cover" />
+                        <Image src={item.product.productImages[0].image_url} alt={item.product.name} fill className="object-cover" />
                       </div>
 
                       {/* Item details */}
                       <div className="flex flex-col">
-                        <h3 className="font-bold text-gray-600">{item.name}</h3>
+                        <h3 className="font-bold text-gray-600">{item.product.name}</h3>
                         <br />
                         <p className="text-xs text-gray-500">
-                          Delivery by <span className="font-semibold">{item.delivery}</span>
+                          {item.variant.name || "Default Variant"}
                         </p>
 
                         {/* Quantity & Actions */}
@@ -73,23 +61,19 @@ export default function CartPage() {
                             <button
                               className="text-gray-600 hover:text-red-500"
                               onClick={() => {
-                                if (item.qty > 1) {
-                                  updateQty(item.id, item.qty - 1);
-                                } else {
-                                  removeFromCart(item.id);
-                                }
+                                updateCartItem(item.id, item.quantity - 1);
                               }}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
 
                             {/* Quantity */}
-                            <span className="text-sm">{item.qty}</span>
+                            <span className="text-sm">{item.quantity}</span>
 
                             {/* Increase Button */}
                             <button
                               className="text-sm font-medium text-purple-600"
-                              onClick={() => updateQty(item.id, item.qty + 1)}
+                              onClick={() => updateCartItem(item.id, item.quantity + 1)}
                             >
                               +
                             </button>
@@ -100,14 +84,6 @@ export default function CartPage() {
                           <span
                             className="cursor-pointer"
                             onClick={() => {
-                              // Save to "Your Items" and remove from cart
-                              addSavedItem({
-                                id: item.id,
-                                name: item.name,
-                                price: item.price,
-                                unit: item.unit,
-                                img: item.img,
-                              });
                               removeFromCart(item.id);
                             }}
                           >
@@ -124,7 +100,7 @@ export default function CartPage() {
                     {/* Right Section Price */}
                     <div className="flex items-end pb-1">
                       <p className="text-lg font-semibold whitespace-nowrap mt-6">
-                        ₹ {item.price} {item.unit}
+                        ₹ {item.variant.price} 
                       </p>
                     </div>
                   </div>
@@ -134,14 +110,14 @@ export default function CartPage() {
               {/* Subtotal */}
               <div className="flex justify-end border-t border-gray-300 pt-4 mt-4">
                 <p className="text-lg font-semibold">
-                  Subtotal ({totalQuantity} items) :{" "}
-                  <span className="font-bold">₹ {subtotal.toFixed(1)}</span>
+                  Total ({totalItems} items) :{" "}
+                  <span className="font-bold">₹ {totalPrice.toFixed(1)}</span>
                 </p>
               </div>
             </section>
 
             {/* Your Items Section */}
-            <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
+            {/* <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
               <h2 className="text-4xl font-bold mb-3">Your Items</h2>
 
               <div className="flex items-center gap-10 border-b border-gray-300 pb-2">
@@ -185,14 +161,14 @@ export default function CartPage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </section> */}
           </div>
 
-          {/* RIGHT SIDE (Subtotal Box) */}
+          {/* RIGHT SIDE (Total Box) */}
           <aside className="bg-[#FFFDEE] w-full lg:w-80 rounded-2xl shadow-md p-6 h-fit sticky top-6">
             <p className="text-lg font-semibold mb-4">
-              Subtotal ({totalQuantity} items) :{" "}
-              <span className="font-bold text-xl">₹ {subtotal.toFixed(1)}</span>
+              Total ({totalItems} items) :{" "}
+              <span className="font-bold text-xl">₹ {totalPrice.toFixed(1)}</span>
             </p>
             <br />
 

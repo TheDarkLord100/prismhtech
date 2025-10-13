@@ -14,7 +14,8 @@ export async function GET(req: Request) {
       .from("products")
       .select(`
         *,
-        productImages (id, image_url, alt_text, priority)
+        productImages (id, image_url, alt_text, priority),
+        ProductVariants (pvr_id, name, price, quantity)
       `);
 
     if (category) {
@@ -28,16 +29,7 @@ export async function GET(req: Request) {
     const { data, error } = await query;
     if (error) throw error;
 
-    const formattedData = data.map((p) => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      priceType: p.is_price_fixed ? "fixed" : "variable",
-      images: p.productImages || [],
-    }));
-
-    return NextResponse.json(formattedData, { status: 200 });
+    return NextResponse.json(data, { status: 200 });
   } catch (error: unknown) {
     console.error("GET /products error:", error);
     return NextResponse.json(

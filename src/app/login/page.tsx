@@ -34,10 +34,8 @@ export default function LoginPage() {
 
       notify(Notification.SUCCESS, "Login successful!");
 
-      // ✅ fetch and set user in Zustand store
       await useUserStore.getState().fetchUser();
 
-      // ✅ go back to intended page or home
       router.push(redirectTo);
     } catch (error) {
       if (error instanceof Error) {
