@@ -87,3 +87,17 @@ export interface CartItemDetails extends CartItem {
 export interface CartWithItems extends Cart {
   items: CartItemDetails[];
 }
+
+export interface Address {
+  adr_id: string;
+  name: string | null;
+  phone: string | null;
+  alt_phone?: string | null;
+  address_l1: string | null;
+  address_l2?: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  country?: string | null;
+  default?: boolean | null;
+}

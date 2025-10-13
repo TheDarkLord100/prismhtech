@@ -4,7 +4,6 @@ import React from "react";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import partner from "../../../public/partners/partner.png";
 import type { Order } from "@/types/entities";
 import type { OrderItem } from "@/types/entities";
 
@@ -189,11 +188,11 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
 
         <div className="flex gap-6 items-start justify-between">
           <div className="w-28 h-28 overflow-hidden rounded-xl flex-shrink-0">
-            <Image
-              src={partner}
+            {/* <Image
+              src="/partners/partner.png"
               alt={item.name}
               className="w-full h-full object-cover"
-            />
+            /> */}
           </div>
 
           {!isDelivered ? (

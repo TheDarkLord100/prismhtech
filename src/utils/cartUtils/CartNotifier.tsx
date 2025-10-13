@@ -3,23 +3,33 @@
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/utils/store/useCartStore";
 import { notify, Notification } from "@/utils/notify";
+import { useAddressStore } from "../store/useAddressStore";
 
 export default function CartNotifier() {
     const { error, message, loading } = useCartStore();
+    const { error: addressError, message: addressMessage } = useAddressStore();
 
     useEffect(() => {
         if (error) {
             notify(Notification.FAILURE, error);
             useCartStore.setState({ error: null });
         }
-    }, [error]);
+        if (addressError) {
+            notify(Notification.FAILURE, addressError);
+            useAddressStore.setState({ error: null });
+        }
+    }, [error, addressError]);
 
     useEffect(() => {
         if (message) {
             notify(Notification.SUCCESS, message);
             useCartStore.setState({ message: null });
         }
-    }, [message]);
+        if (addressMessage) {
+            notify(Notification.SUCCESS, addressMessage);
+            useAddressStore.setState({ message: null });
+        }
+    }, [message, addressMessage]);
     return (
         <>
             {loading && (
