@@ -19,9 +19,7 @@ export default function GlobalProvider({ children }: { children: React.ReactNode
         }
         await fetchCart();
         
-      } else {
-        clearCart();
-      }
+      } 
     };
 
     init();

@@ -7,7 +7,13 @@
 @tailwind utilities;
 
 
-/* Default (light theme) */
+@font-face {
+  font-family:"Gotham";
+  src: url("/fonts/Gotham Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
