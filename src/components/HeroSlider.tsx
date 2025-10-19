@@ -7,8 +7,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const slides = [
   {
     image: "/Assets/Category1.png",
-    title: "Lorem Ipsum",
-    subtitle: "Lorum Ipsum iubgdsfv srfvuihsd",
+    title: "Pervesh Rasayan",
+    subtitle: "The Chemistry of Lasting Value",
+    description: "Every product we deliver and every relationship we cultivate must embody quality, trust and long-term value. We honor our past by renewing this everyday."
   },
   {
     image: "/Assets/Category2.png",
@@ -38,7 +39,7 @@ export default function HeroSlider() {
     setCurrent((prev) => (prev + 1) % slides.length);
 
   return (
-    <section className="relative h-[100vh] w-full overflow-hidden">
+    <section className="relative h-[100vh] w-full overflow-hidden font-['Gotham']">
       {slides.map((slide, index) => (
         <div
           key={index}
@@ -57,27 +58,49 @@ export default function HeroSlider() {
             <div className="absolute inset-0 bg-black/40" />
 
 
-            <div className="absolute bottom-20 left-20 text-left">
-              <div className="inline-block px-10 py-6 rounded-2xl 
-                  bg-white/2 backdrop-blur shadow-lg border-t border-b border-white/30">
-                <h3 className="text-2xl font-regular text-white-400 drop-shadow-lg">
-                  {slide.title}
+            <div className="absolute bottom-20 left-5 md:left-10 lg:left-20 w-4/5 lg:w-2/5 text-left">
+              <div
+                className="inline-block px-6 md:px-10 py-6 rounded-2xl 
+      bg-white/2 backdrop-blur shadow-lg border-t border-b border-white/30"
+              >
+                {/* Subtitle */}
+                <h3 className="
+      text-lg md:text-2xl 
+      font-regular text-white/90 drop-shadow-lg
+    ">
+                  Pervesh Rasayan
                 </h3>
-                <h1 className="text-5xl font-bold italic text-yellow-400 drop-shadow-lg">
-                  {slide.title}
+
+                {/* Main Title */}
+                <h1 className="
+      text-2xl md:text-4xl lg:text-5xl 
+      font-bold italic text-yellow-400 drop-shadow-lg
+    ">
+                  The Chemistry of Lasting Value
                 </h1>
 
-                <p className="text-lg mt-16 text-white drop-shadow-md">
-                  {slide.subtitle}
+                {/* Paragraph */}
+                <p className="
+      text-sm md:text-base lg:text-lg 
+      mt-6 md:mt-10 lg:mt-16 
+      text-white drop-shadow-md
+    ">
+                  Every product we deliver and every relationship we cultivate must embody
+                  quality, trust and long-term value. We honor our past by renewing this everyday.
                 </p>
 
-                {/* CTA link */}
-                <button className="mt-6 flex items-center gap-2 text-white/90 hover:text-white transition">
-                  <span className="block w-8 h-[1px] bg-white/60" />
-                  <span className="text-base tracking-wide">Discover</span>
+                {/* Button */}
+                <button className="
+      mt-4 md:mt-6 
+      flex items-center gap-2 
+      text-white/90 hover:text-white transition
+    ">
+                  <span className="block w-6 md:w-8 h-[1px] bg-white/60" />
+                  <span className="text-sm md:text-base tracking-wide">Discover</span>
                 </button>
               </div>
             </div>
+
 
           </div>
         </div>
