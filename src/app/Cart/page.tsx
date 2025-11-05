@@ -5,15 +5,18 @@ import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useCartStore } from "@/utils/store/useCartStore";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
-  const { 
-    cart, 
+  const {
+    cart,
     removeFromCart,
     updateCartItem,
     getTotalItems,
     getTotalPrice
   } = useCartStore();
+
+  const router = useRouter();
 
   const items = cart?.items || [];
   const totalItems = getTotalItems();
@@ -100,7 +103,7 @@ export default function CartPage() {
                     {/* Right Section Price */}
                     <div className="flex items-end pb-1">
                       <p className="text-lg font-semibold whitespace-nowrap mt-6">
-                        ₹ {item.variant.price} 
+                        ₹ {item.variant.price}
                       </p>
                     </div>
                   </div>
@@ -172,14 +175,11 @@ export default function CartPage() {
             </p>
             <br />
 
-            <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-white py-3 rounded-4xl font-medium text-lg">
-              Proceed to Buy
+            <button
+              onClick={() => router.push("/checkout")}
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-white py-3 rounded-4xl font-medium text-lg">
+              Proceed to Checkout
             </button>
-
-            <select className="w-full mt-4 border border-yellow-400 rounded-xl px-3 py-3 text-base">
-              <option>EMI Available</option>
-              <option>No EMI</option>
-            </select>
           </aside>
         </div>
       </main>
