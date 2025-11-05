@@ -1,13 +1,11 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import HeroSlider from "@/components/HeroSlider";
 import Footer from "@/components/Footer";
 import MemorialSection from "@/components/MemorialSection";
 import ProductsSlider from "@/components/ProductsSlider";
 import { useEffect, useState } from "react";
 import type { Category, Brand } from "@/types/entities";
-import Image from "next/image";
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,14 +47,48 @@ export default function HomePage() {
   return (
     <main className="bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50] text-white">
       <Navbar />
-      <HeroSlider />
       <div className="relative w-full h-[100vh] font-['Gotham']">
-        <Image
-          src="/Assets/Category1.png"
-          alt="Category"
-          fill
-          className="object-cover"
-          unoptimized
+        <video
+          src="/Assets/hero.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="object-cover w-full h-full absolute inset-0"
+        />
+
+        <div className="absolute bottom-20 left-5 md:left-10 lg:left-20 w-4/5 lg:w-2/5 text-left">
+          <div
+            className="inline-block px-6 md:px-10 py-6 rounded-2xl
+        bg-white/2 backdrop-blur shadow-lg border-t border-b border-white/30"
+          >
+            <h3 className="text-lg md:text-2xl font-regular text-white/90 drop-shadow-lg">
+              Pervesh Rasayan
+            </h3>
+
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold italic text-yellow-400 drop-shadow-lg">
+              The Chemistry of Lasting Value
+            </h1>
+
+            <p className="text-sm md:text-base lg:text-lg mt-6 md:mt-10 lg:mt-16 text-white drop-shadow-md">
+              Every product we deliver and every relationship we cultivate must embody
+              quality, trust and long-term value. We honor our past by renewing this everyday.           
+            </p>
+            <button className="mt-4 md:mt-6 flex items-center gap-2 text-white/90 hover:text-white transition">
+              <span className="block w-6 md:w-8 h-[1px] bg-white/60" />
+              <span className="text-sm md:text-base tracking-wide">Discover</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="relative w-full h-[100vh] font-['Gotham']">
+        <video
+          src="/Assets/hero_2.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="object-cover w-full h-full absolute inset-0"
         />
 
         <div className="absolute bottom-20 right-5 md:right-10 lg:right-20 w-4/5 lg:w-2/5 text-left">

@@ -50,11 +50,10 @@ export default function Footer() {
               Company Details
             </h3>
             <p className="mt-3 text-sm leading-relaxed">
-              Jaha bhi he wahi ka location dal dena bhai jase ki mera he pariyavaran complex.
-              only an example sach me mat dal dena
+              B160, B161, B162, B165, B166, Nehru Ground, Faridabad, 121001, Haryana
             </p>
-            <p className="mt-3 text-sm">📞 +91 *********  +91 *********</p>
-            <p className="mt-2 text-sm">✉️ manavkakar@sexyboy.com</p>
+            <p className="mt-3 text-sm">📞 0129-2414130, 2413279</p>
+            <p className="mt-2 text-sm">✉️ vinod@perveshimpex.com</p>
           </div>
 
           {/* Products */}
