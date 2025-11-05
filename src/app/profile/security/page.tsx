@@ -18,7 +18,7 @@ export default function LoginSecurity() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f5f5]">
-      <Navbar />
+      <Navbar type="colored"/>
 
       {/* Page Content */}
       <main className="flex-grow pt-28 pb-16 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-48 2xl:px-72">

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { useUserStore } from "@/utils/store/userStore";
 
-export default function Navbar() {
+export default function Navbar({ type = "transparent" }: { type?: string }) {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -33,7 +33,8 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed inset-x-0 top-0 z-50 transition-transform duration-300
+        className={`fixed inset-x-0 top-0 z-50 transition-transform duration-300 
+          ${type !== "transparent" ? "bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50]" : ""}
     ${hidden ? "-translate-y-full" : "translate-y-0"}`}
       >
         {/* Frosted background behind everything */}

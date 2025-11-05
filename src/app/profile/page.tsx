@@ -35,7 +35,7 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar type="colored" />
 
       {/* Added padding-top to avoid overlap with fixed navbar */}
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12">

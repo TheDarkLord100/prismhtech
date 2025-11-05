@@ -112,6 +112,11 @@ export const useAddressStore = create<AddressState>((set, get) => ({
             if (!response.ok) {
                 throw new Error('Failed to delete address');
             }
+            set((state) => ({
+                addresses: state.addresses.filter((addr) => addr.adr_id !== id),
+                loading: false,
+                message: "Address deleted successfully"
+            }));
         } catch (error) {
             set({ error: (error as Error).message });
         } finally {

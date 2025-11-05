@@ -252,7 +252,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
 const YourOrders = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
+      <Navbar type="colored" />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-20 pb-20">
         <div className="text-sm text-gray-500 mb-6 font-medium">
