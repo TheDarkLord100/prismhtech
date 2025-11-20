@@ -6,6 +6,7 @@ import { useCartStore } from "@/utils/store/useCartStore";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import CartItem from "./cartItem";
+import StepIndicator from "@/components/StepIndicator";
 
 export default function CartPage() {
   const {
@@ -46,11 +47,12 @@ export default function CartPage() {
               </section>
             </div>
           ) : (
-            <div className="w-4/6 max-w-7xl flex flex-col lg:flex-row gap-6">
+            <div className="w-5/6 max-w-7xl flex flex-col lg:flex-row gap-6">
 
               <div className="flex-1 flex flex-col gap-6">
                 <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
                   <h2 className="text-4xl font-bold mb-3">Your Cart</h2>
+                  <StepIndicator currentStep={1} />
                   <hr className="border-t border-gray-300 my-4" />
 
                   {items.map((item) => (
@@ -67,9 +69,9 @@ export default function CartPage() {
                   ))}
 
                   <p className="text-lg font-semibold">
-                      Total ({totalItems} items) :{" "}
-                      <span className="font-bold">₹ {totalPrice.toFixed(1)}</span>
-                    </p>
+                    Total ({totalItems} items) :{" "}
+                    <span className="font-bold">₹ {totalPrice.toFixed(1)}</span>
+                  </p>
                 </section>
 
                 {/* Your Items Section */}
