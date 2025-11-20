@@ -1,12 +1,11 @@
-// app/cart/page.tsx
 "use client";
 
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useCartStore } from "@/utils/store/useCartStore";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
+import CartItem from "./cartItem";
 
 export default function CartPage() {
   const {
@@ -23,93 +22,54 @@ export default function CartPage() {
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
 
+
+
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex min-h-screen justify-center py-8 px-4 pt-20 bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50]">
+      <main className="flex flex-1 justify-center py-8 px-4 pt-20 bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50]">
         {
           items.length === 0 ? (
-            <>
-            No items in cart. Click here browse products.
-            </>) : (
+            <div className="w-4/6 max-w-7xl flex-1 flex flex-col gap-6">
+              <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
+                <h2 className="text-4xl mb-3">Your Cart is Empty</h2>
+
+                <hr className="border-t border-gray-300 my-4" />
+                <div className="relative w-full mt-6 h-40 sm:h-56 md:h-72 lg:h-80">
+                  <Image
+                    src="/Assets/empty_cart.png"
+                    alt="Empty Cart"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </section>
+            </div>
+          ) : (
             <div className="w-4/6 max-w-7xl flex flex-col lg:flex-row gap-6">
 
               <div className="flex-1 flex flex-col gap-6">
                 <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
                   <h2 className="text-4xl font-bold mb-3">Your Cart</h2>
+                  <hr className="border-t border-gray-300 my-4" />
 
-                  <div className="flex justify-end items-center pb-3 border-b border-gray-300">
-                    <span className="text-sm font-medium text-blue-600">Price</span>
-                  </div>
+                  {items.map((item) => (
+                    <>
+                      <CartItem
+                        key={item.id}
+                        item={item}
+                        updateCartItem={updateCartItem}
+                        removeFromCart={removeFromCart}
+                      />
+                      <hr className="border-t border-gray-300 my-4" />
+                    </>
 
-                  <div className="divide-y divide-gray-300">
-                    {items.map((item) => (
-                      <div key={item.id} className="flex justify-between items-start gap-4 py-4">
-                        <div className="flex gap-4">
-                          <div className="relative w-28 h-24 rounded-md overflow-hidden border">
-                            <Image src={item.product.productImages[0].image_url} alt={item.product.name} fill className="object-cover" />
-                          </div>
+                  ))}
 
-                          <div className="flex flex-col">
-                            <h3 className="font-bold text-gray-600">{item.product.name}</h3>
-                            <br />
-                            <p className="text-xs text-gray-500">
-                              {item.variant.name || "Default Variant"}
-                            </p>
-
-                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-600 flex-wrap">
-                              <div className="flex items-center border border-purple-500 rounded-full px-2 py-0.5 gap-2">
-                                <button
-                                  className="text-gray-600 hover:text-red-500"
-                                  onClick={() => {
-                                    updateCartItem(item.id, item.quantity - 1);
-                                  }}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-
-                                <span className="text-sm">{item.quantity}</span>
-
-                                <button
-                                  className="text-sm font-medium text-purple-600"
-                                  onClick={() => updateCartItem(item.id, item.quantity + 1)}
-                                >
-                                  +
-                                </button>
-                              </div>
-
-                              <span className="text-gray-400">|</span>
-                              <span
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  removeFromCart(item.id);
-                                }}
-                              >
-                                Add to list
-                              </span>
-                              <span className="text-gray-400">|</span>
-                              <span className="cursor-pointer">See more like this</span>
-                              <span className="text-gray-400">|</span>
-                              <span className="cursor-pointer">Share</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end pb-1">
-                          <p className="text-lg font-semibold whitespace-nowrap mt-6">
-                            ₹ {item.variant.price}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-end border-t border-gray-300 pt-4 mt-4">
-                    <p className="text-lg font-semibold">
+                  <p className="text-lg font-semibold">
                       Total ({totalItems} items) :{" "}
                       <span className="font-bold">₹ {totalPrice.toFixed(1)}</span>
                     </p>
-                  </div>
                 </section>
 
                 {/* Your Items Section */}
@@ -178,6 +138,6 @@ export default function CartPage() {
         }
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
