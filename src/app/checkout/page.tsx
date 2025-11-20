@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AddressCard from "@/components/AddressCard";
@@ -9,14 +8,16 @@ import AddAddressModal from "@/components/AddAddressModal";
 import { useAddressStore } from "@/utils/store/useAddressStore";
 import { useCartStore } from "@/utils/store/useCartStore";
 import type { Address } from "@/types/entities";
+import { useUserStore } from "@/utils/store/userStore";
 
 export default function CheckoutPage() {
-    const router = useRouter();
 
     const { addresses, fetchAddresses, addAddress, updateAddress, deleteAddress } = useAddressStore();
     const { cart, getTotalItems, getTotalPrice, clearCart } = useCartStore();
 
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<string | null>(null);
+    const [sameBillingAddress, setSameBillingAddress] = useState(true);
     const [editAddress, setEditAddress] = useState<Address | null>(null);
     const [showModal, setShowModal] = useState(false);
 
@@ -32,8 +33,10 @@ export default function CheckoutPage() {
             const defaultAddr = addresses.find((a) => a.default);
             if (defaultAddr) {
                 setSelectedAddressId(defaultAddr.adr_id);
+                setSelectedBillingAddressId(defaultAddr.adr_id);
             } else {
-                setSelectedAddressId(addresses[0].adr_id); // fallback: first address
+                setSelectedAddressId(addresses[0].adr_id);
+                setSelectedBillingAddressId(addresses[0].adr_id);
             }
         }
     }, [addresses]);
@@ -51,6 +54,8 @@ export default function CheckoutPage() {
         }
     };
 
+    const { user } = useUserStore();
+
     const handleProceedToPayment = async () => {
         if (!selectedAddressId) {
             alert("Please select a delivery address before proceeding to payment.");
@@ -67,7 +72,7 @@ export default function CheckoutPage() {
                 document.body.appendChild(script);
             });
 
-        const resLoaded = await loadRazorpay();     
+        const resLoaded = await loadRazorpay();
         if (!resLoaded) {
             alert("Failed to load Razorpay SDK. Please try again.");
             return;
@@ -90,7 +95,7 @@ export default function CheckoutPage() {
                 amount: totalPrice,
                 receipt: `rcpt_${Math.random().toString(36).substring(2, 15)}`,
                 ship_adr_id: selectedAddressId,
-                bill_adr_id: selectedAddressId,
+                bill_adr_id: sameBillingAddress ? selectedAddressId : selectedBillingAddressId,
                 cart_items: cartItems,
             })
         })
@@ -110,8 +115,8 @@ export default function CheckoutPage() {
             key: process.env.NEXT_PUBLIC_RAZORYPAY_KEY!,
             amount: razorpayOrder.amount,
             currency: "INR",
-            name: "test name",
-            description: "Test Transaction",
+            name: "Pervesh Rasayan Pvt. Ltd.",
+            description: "Order Id: " + orderId,
             order_id: razorpayOrder.id,
             handler: async function (response: any) {
                 const verifyRes = await fetch("/api/verify-payment", {
@@ -139,9 +144,9 @@ export default function CheckoutPage() {
                 }
             },
             prefill: {
-                name: "Test User",
-                email: "test@example.com",
-                contact: "9999999999",
+                name: user?.name,
+                email: user?.email,
+                contact: user?.phone,
             },
             theme: { color: "#3399cc" },
         }
@@ -232,6 +237,97 @@ export default function CheckoutPage() {
                                 </ul>
                             )}
                         </section>
+
+                        <div className="mt-4 flex items-center gap-2 bg-[#FFFAED] rounded-xl p-4">
+                            <input
+                                type="checkbox"
+                                checked={sameBillingAddress}
+                                onChange={(e) => setSameBillingAddress(e.target.checked)}
+                                className="w-5 h-5 accent-green-600 cursor-pointer"
+                            />
+                            <label className="text-lg font-medium text-gray-800 cursor-pointer">
+                                Billing address is same as delivery address
+                            </label>
+                        </div>
+
+                        {
+                            !sameBillingAddress && (
+                                <section className="bg-[#FFFAED] w-full rounded-2xl shadow-md p-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h1 className="text-3xl font-semibold mb-8">Select Billing Address</h1>
+                                        <button
+                                            onClick={async () => {
+                                                setShowModal(true);
+                                            }}
+                                            className="bg-yellow-400 text-white py-2 px-6 rounded-lg font-semibold"
+                                        >
+                                            Add New
+                                        </button>
+                                    </div>
+
+                                    {addresses.length === 0 ? (
+                                        <div className="text-gray-600">
+                                            No saved addresses.{" "}
+                                        </div>
+                                    ) : (
+                                        <ul className="flex flex-col gap-4">
+                                            {addresses.map((addr) => (
+                                                <li
+                                                    key={addr.adr_id}
+                                                    className={`flex gap-3 border rounded-xl p-4 transition-all ${selectedAddressId === addr.adr_id
+                                                        ? "border-green-600 bg-green-50"
+                                                        : "border-gray-300 hover:border-green-400"
+                                                        }`}
+                                                >
+                                                    {/* Radio Button */}
+                                                    <input
+                                                        type="radio"
+                                                        name="selectedBillingAddress"
+                                                        value={addr.adr_id}
+                                                        checked={selectedBillingAddressId === addr.adr_id}
+                                                        onChange={() => setSelectedAddressId(addr.adr_id)}
+                                                        className="w-5 h-5 mt-1 accent-green-600 cursor-pointer"
+                                                    />
+
+                                                    {/* Address Details */}
+                                                    <div className="flex-1">
+                                                        <h3 className="font-semibold text-gray-800 text-lg">
+                                                            {addr.name}
+                                                        </h3>
+
+                                                        <p className="text-sm text-gray-700 mt-1 leading-snug">
+                                                            {addr.address_l1}, {addr.address_l2}, {addr.city}, {addr.state} -{" "}
+                                                            {addr.pincode}, India
+                                                        </p>
+
+                                                        <p className="text-sm text-gray-700 mt-1">
+                                                            Phone number:{" "}
+                                                            <span className="font-medium">
+                                                                {addr.phone}
+                                                            </span>
+                                                        </p>
+
+                                                        <div className="flex flex-wrap gap-4 text-sm text-blue-600 mt-2">
+                                                            <button className="hover:underline" onClick={() => {
+                                                                setEditAddress(addr);
+                                                                setShowModal(true);
+                                                            }}>
+                                                                Edit address
+                                                            </button>
+                                                            <span>|</span>
+                                                            <button className="hover:underline"
+                                                                onClick={() => deleteAddress(addr.adr_id)}>
+                                                                Remove address
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </section>
+                            )
+                        }
                     </div>
 
                     <aside className="bg-[#FFFDEE] w-full lg:w-80 rounded-2xl shadow-md p-6 h-fit top-6">
