@@ -1,4 +1,3 @@
-// utils/checkout/handleProceedToPayment.ts
 export async function handleProceedToPayment({
   selectedDeliveryId,
   selectedBillingId,
@@ -64,7 +63,6 @@ export async function handleProceedToPayment({
 
   if (!data.success) {
     alert("Failed to create order: " + data.message);
-    return;
   }
 
   const razorpayOrder = data.razorpay_order;
@@ -94,8 +92,8 @@ export async function handleProceedToPayment({
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        alert("Payment successful! Order ID: " + orderId);
         await clearCart();
+        window.location.href = `/order?order_id=${orderId}`;
       } else {
         alert("Payment verification failed: " + verifyData.message);
       }

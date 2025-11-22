@@ -21,7 +21,7 @@ interface CartStore {
   addToCart: (product: Product, variant: Variant, quantity: number) => Promise<void>;
   updateCartItem: (cartItemId: string, quantity: number) => Promise<void>;
   removeFromCart: (id: string) => Promise<void>;
-  clearCart: () => Promise<void>;
+  clearCart: ({invisible}: {invisible: boolean}) => Promise<void>;
   fetchCart: () => Promise<void>;
   
   getTotalItems: () => number;
@@ -138,13 +138,13 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      clearCart: async () => {
+      clearCart: async ({invisible}) => {
         const { user } = useUserStore.getState();
         const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
 
         if (!user) {
           cart.items = [];
-          set({ cart, loading: false, message: "Cart cleared successfully" });
+          set({ cart, loading: false, message: invisible ? null : "Cart cleared successfully" });
           return;
         }
 

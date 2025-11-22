@@ -1,69 +1,57 @@
 "use client";
 
 interface StepIndicatorProps {
-  currentStep: number; // 1, 2, or 3
+  currentStep: number; // 1, 2, 3, or 4
 }
 
 export default function StepIndicator({ currentStep }: StepIndicatorProps) {
+  const renderStep = (step: number, label: string) => {
+    const isCompleted = currentStep > step; // completed before current step
+    const isCurrent = currentStep === step; // the current active step
+
+    return (
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        {/* Step Circle */}
+        <div
+          className={`
+            w-6 h-6 rounded-full flex items-center justify-center text-xs
+            ${
+              isCompleted
+                ? "bg-green-600 text-white"
+                : isCurrent
+                ? "border border-green-600 text-green-600"
+                : "border border-gray-400 text-gray-400"
+            }
+          `}
+        >
+          {isCompleted ? "✓" : step}
+        </div>
+
+        {/* Step Label */}
+        <span
+          className={
+            isCompleted || isCurrent ? "font-semibold" : "text-gray-400"
+          }
+        >
+          {label}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-2 mb-4 text-sm text-gray-700">
 
-      {/* STEP 1 */}
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <div
-          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-            currentStep >= 1
-              ? "bg-green-600 text-white"
-              : "border border-gray-400 text-gray-400"
-          }`}
-        >
-          {currentStep > 1 ? "✓" : "1"}
-        </div>
+      {renderStep(1, "Step 1: Select item(s)")}
 
-        <span className={currentStep >= 1 ? "font-semibold" : "text-gray-400"}>
-          Step 1: Select item(s)
-        </span>
-      </div>
+      <div className="hidden sm:block flex-1 border-t border-gray-400 mx-2" />
 
-      {/* LINE 1 (hidden on mobile) */}
-      <div className="hidden sm:block flex-1 border-t border-gray-400 mx-2"></div>
+      {renderStep(2, "Step 2: Select address")}
 
-      {/* STEP 2 */}
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <div
-          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-            currentStep >= 2
-              ? "border border-green-600 text-green-600"
-              : "border border-gray-400 text-gray-400"
-          }`}
-        >
-          2
-        </div>
+      <div className="hidden sm:block flex-1 border-t border-dashed border-gray-300 mx-2" />
 
-        <span className={currentStep >= 2 ? "font-semibold" : "text-gray-400"}>
-          Step 2: Select address
-        </span>
-      </div>
+      {renderStep(3, "Step 3: Checkout")}
 
-      {/* LINE 2 (hidden on mobile) */}
-      <div className="hidden sm:block flex-1 border-t border-dashed border-gray-300 mx-2"></div>
-
-      {/* STEP 3 */}
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <div
-          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-            currentStep >= 3
-              ? "border border-green-600 text-green-600"
-              : "border border-gray-400 text-gray-400"
-          }`}
-        >
-          3
-        </div>
-
-        <span className={currentStep >= 3 ? "font-semibold" : "text-gray-400"}>
-          Step 3: Checkout
-        </span>
-      </div>
     </div>
   );
 }
