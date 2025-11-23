@@ -138,7 +138,7 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      clearCart: async ({invisible}) => {
+      clearCart: async ({invisible = false}) => {
         const { user } = useUserStore.getState();
         const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
 

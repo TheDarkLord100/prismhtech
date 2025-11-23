@@ -13,7 +13,7 @@ export async function handleProceedToPayment({
   cart: any;
   totalPrice: number;
   user: any;
-  clearCart: () => Promise<void>;
+  clearCart: ({invisible}: {invisible: boolean}) => Promise<void>;
 }) {
   if (!selectedDeliveryId) {
     alert("Please select a delivery address before proceeding to payment.");
@@ -92,7 +92,7 @@ export async function handleProceedToPayment({
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        await clearCart();
+        await clearCart({invisible: true});
         window.location.href = `/order?order_id=${orderId}`;
       } else {
         alert("Payment verification failed: " + verifyData.message);
