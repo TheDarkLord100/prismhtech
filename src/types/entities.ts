@@ -9,19 +9,32 @@ export interface Variant {
 
 export type OrderItem = {
   id: number;
-  name: string;
-  image: string;
-  status: "Ordered" | "Shipped" | "Arriving";
-  statusDate: string;
+  created_at: string;
+  product_id: string;
+  variant_id: string | null;
+  quantity: number;
+  price: number;
+  ordr_id: string;
+  
+  product?: Product | null;
+  variant?: Variant | null;
 };
 
+
 export type Order = {
-  orderId: string;
-  datePlaced: string;
-  total: string;
-  shipTo: string;
-  deliveryExpected?: string;
-  deliveredDate?: string;
+  id: string;
+  created_at: string;
+  user_id: string;
+  total_amount: number;
+  payment_type: string | null;
+  status: string;
+  status_description: string | null;
+  razorpay_order_id: string | null;
+  shipping_address_id: string | null;
+  billing_address_id: string | null;
+
+  shipping_address?: Address | null;
+  billing_address?: Address | null;
   items: OrderItem[];
 };
 
@@ -36,11 +49,11 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  productImages: ProductImage[];  // rename images -> productImages
+  productImages: ProductImage[];  
   priceType: "fixed" | "variable";
   price: number;
   ProductVariants: Variant[];
-  relatedProducts?: Product[];    // optional array
+  relatedProducts?: Product[];    
 };
 
 export interface Category {
