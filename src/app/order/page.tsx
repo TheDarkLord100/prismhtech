@@ -62,7 +62,7 @@ export default function OrderPage() {
               </div>
 
               {/* Step Indicator at Step 3 */}
-              <StepIndicator currentStep={4} />
+              {/* <StepIndicator currentStep={4} /> */}
 
               <hr className="my-5 border-t border-gray-300" />
 
