@@ -63,7 +63,7 @@ export default function ProductsSlider({
                   {categories.map((category) => (
                     <SwiperSlide key={category.id} className="!h-auto">
                       <Link
-                        href={`/Products?categoryId=${category.id}&categoryName=${encodeURIComponent(
+                        href={`/products?categoryId=${category.id}&categoryName=${encodeURIComponent(
                           category.name
                         )}`}
                       >
