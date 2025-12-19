@@ -184,14 +184,14 @@ export default function ProductsPage() {
                     onClick={() => {
                       if (categoryName) {
                         router.push(
-                          `/ProductDetails/${p.id}?category=${categoryName}`
+                          `/product-details/${p.id}?category=${categoryName}`
                         );
                       } else if(brandName) {
                         router.push(
-                          `/ProductDetails/${p.id}?brand=${brandName}`
+                          `/product-details/${p.id}?brand=${brandName}`
                         );
                       } else {
-                        router.push(`/ProductDetails/${p.id}`);
+                        router.push(`/product-details/${p.id}`);
                       }
                     }}
                   />

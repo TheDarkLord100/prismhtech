@@ -66,34 +66,34 @@ export default function ProductDetailsPage() {
   const total = (price * quantity).toFixed(2);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50]">
       <Navbar />
 
-      <main className="bg-[#F2F2F2] flex-1">
+      <main className="flex-1">
         <div className="max-w-6xl mx-auto px-6 py-10 mt-10">
           {/* Breadcrumb */}
-          <div className="text-gray-600 mb-10 text-3xl text-start flex flex-wrap gap-2 items-center">
+          <div className="text-white mb-10 text-3xl text-start flex flex-wrap gap-2 items-center">
             <span
-              className="font-bold text-green-900 relative inline-block cursor-pointer hover:text-green-700"
-              onClick={() => router.push("/Products")}
+              className="font-bold text-white relative inline-block cursor-pointer hover:text-yellow-400"
+              onClick={() => router.push("/products")}
             >
               Products
-              <span className="absolute left-0 bottom-0 w-full h-[3px] bg-yellow-400"></span>
+              <span className="absolute left-0 bottom-0 w-full h-[3px] bg-purple-500"></span>
             </span>
             {" > "}
             {categoryOrBrand && (
               <>
                 <span
-                  className="font-bold text-green-900 relative inline-block cursor-pointer hover:text-green-700"
+                  className="font-bold text-white relative inline-block cursor-pointer hover:text-green-700"
                   onClick={() => router.back()}
                 >
                   {categoryOrBrand}
-                  <span className="absolute left-0 bottom-0 w-full h-[3px] bg-yellow-400"></span>
+                  <span className="absolute left-0 bottom-0 w-full h-[3px] bg-purple-500"></span>
                 </span>
                 {" > "}
               </>
             )}
-            <span className="font-semibold text-gray-700">
+            <span className="font-semibold text-yellow-400">
               {mainProduct.name}
             </span>
           </div>
@@ -123,8 +123,8 @@ export default function ProductDetailsPage() {
                       key={idx}
                       onClick={() => setSelectedImage(img.image_url)}
                       className={`relative w-32 h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${selectedImage === img.image_url
-                        ? "border-green-600"
-                        : "border-gray-200 hover:border-green-500"
+                        ? "border-yellow-400"
+                        : "border-white/30 hover:border-yellow-400"
                         }`}
                     >
                       <Image
@@ -149,8 +149,8 @@ export default function ProductDetailsPage() {
                     key={variant.pvr_id}
                     onClick={() => setSelectedVariant(variant)}
                     className={`px-4 py-2 rounded-lg cursor-pointer border-2 transition select-none ${selectedVariant?.pvr_id === variant.pvr_id
-                      ? "border-green-600 bg-green-50"
-                      : "border-gray-200 hover:border-green-400"
+                      ? "bg-white/90 text-green-900"
+                      : "border-white/30 hover:border-yellow-400 text-white"
                       }`}
                   >
                     {variant.name || "Unnamed Variant"}
@@ -164,7 +164,7 @@ export default function ProductDetailsPage() {
               <h1 className="text-3xl font-semibold text-green-500">
                 {mainProduct.name}
               </h1>
-              <p className="text-3xl font-bold bg-gradient-to-b from-green-900 to-green-400 bg-clip-text text-transparent">
+              <p className="text-3xl font-bold text-yellow-400">
                 ₹ {selectedVariant?.price ?? mainProduct.price ?? 0}
               </p>
 
@@ -185,7 +185,7 @@ export default function ProductDetailsPage() {
                       -
                     </button>
 
-                    <span className="w-9 h-[22px] flex items-center justify-center bg-white text-green-700 font-semibold text-sm select-none mx-2">
+                    <span className="w-9 h-[22px] flex items-center justify-center bg-white/90 text-green-700 font-semibold text-sm select-none mx-2">
                       {itemInCart.quantity}
                     </span>
 
@@ -210,7 +210,7 @@ export default function ProductDetailsPage() {
                     onClick={() =>
                       addToCart(mainProduct, selectedVariant!, quantity)
                     }
-                    className="bg-yellow-400 text-white py-2 px-6 rounded-lg font-semibold"
+                    className="bg-yellow-400 text-green-900 hover:bg-yellow-300 py-2 px-6 rounded-lg font-semibold"
                   >
                     Add to Cart
                   </button>
@@ -222,11 +222,11 @@ export default function ProductDetailsPage() {
 
           {/* Product Details Accordion */}
           <div className="mt-8">
-            <details className="bg-gray-100 p-4 rounded-md">
-              <summary className="cursor-pointer font-semibold">
+            <details className="p-4 rounded-md">
+              <summary className="cursor-pointer font-semibold text-yellow-400">
                 Product details
               </summary>
-              <p className="mt-2 text-gray-700">
+              <p className="mt-2 text-white">
                 {mainProduct.description ||
                   "Detailed description of the product goes here."}
               </p>

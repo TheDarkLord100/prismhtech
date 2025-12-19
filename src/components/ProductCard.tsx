@@ -14,10 +14,8 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   const router = useRouter();
   const { addToCart, cart, updateCartItem } = useCartStore();
 
-  // console.log("Cart in ProductCard:", cart);
-
+  const defaultVariant = product.ProductVariants?.[0] || null;
   const itemPresentInCart = cart?.items?.find((item) => item.product.id === product.id) || null;
-  // console.log("Item present in cart:", itemPresentInCart);
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -34,17 +32,28 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
     >
       <div className="px-3 pt-3 pb-1">
         <div className="relative w-full h-[200px]">
-          <Image src={product.productImages?.[0].image_url ?? "/Assets/category1.png"} alt={product.name} fill className="object-cover rounded-xl" />
+          <Image src={product.productImages?.[0]?.image_url ?? "/Assets/category1.png"} alt={product.name} fill className="object-cover rounded-xl" />
         </div>
       </div>
 
-      <div className="flex h-[85px]">
+      <div className="flex ">
         <div className="w-[60%] px-3 py-2 flex flex-col justify-center">
           <h3 className="text-gray-800 text-sm font-medium">{product.name}</h3>
-          <p className="text-gray-900 text-lg font-bold mt-1">₹ {product.price} per Kg</p>
-        </div>
-
-        <div className="w-px bg-gray-300" />
+          {defaultVariant ? (
+            <>
+              <p className="text-gray-800 text-xs">
+                {defaultVariant.name}
+              </p>
+              <p className="text-gray-900 text-lg font-bold mt-1">
+                ₹ {defaultVariant.price}
+              </p>
+            </>
+          ) : (
+            <p className="text-red-500 text-sm mt-1">
+              Variant unavailable
+            </p>
+          )}
+        </div>  
 
         <div className="w-[40%] px-2 py-2 flex flex-col justify-center items-center">
           {itemPresentInCart ? (
@@ -80,7 +89,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                addToCart(product, product.ProductVariants[0], 1);
+                addToCart(product, defaultVariant, 1);
               }}
               className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-md shadow"
             >
