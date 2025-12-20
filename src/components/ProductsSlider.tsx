@@ -22,7 +22,7 @@ export default function ProductsSlider({
       <section className="w-full py-20 px-8 bg-transparent">
         <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-7xl mx-auto">
           {/* Left heading */}
-          <div className="md:w-1/3 w-full flex flex-col gap-6 items-center md:items-start text-center md:text-left">
+          <div className="md:w-1/3 w-full flex flex-col gap-6 items-start text-left md:text-left">
             <div className="flex flex-col gap-2">
               <h3 className="text-white text-lg uppercase tracking-widest font-light">
                 OUR
@@ -32,7 +32,7 @@ export default function ProductsSlider({
               </h2>
               <div className="w-12 h-0.5 bg-gray-400 my-2"></div>
               <Link
-                href="/Products"
+                href="/products"
                 className="text-gray-300 text-base hover:text-white transition-colors duration-300"
               >
                 View all products →
@@ -48,22 +48,22 @@ export default function ProductsSlider({
               <div className="relative">
                 <Swiper
                   modules={[Navigation]}
-                  spaceBetween={24}
-                  slidesPerView={1}
+                  spaceBetween={16}
+                  slidesPerView={2}
                   navigation={{
                     nextEl: ".custom-swiper-button-next",
                     prevEl: ".custom-swiper-button-prev",
                   }}
                   loop
                   breakpoints={{
-                    640: { slidesPerView: 2 },
+                    640: { slidesPerView: 3 },
                     1024: { slidesPerView: 4 },
                   }}
                 >
                   {categories.map((category) => (
                     <SwiperSlide key={category.id} className="!h-auto">
                       <Link
-                        href={`/Products?categoryId=${category.id}&categoryName=${encodeURIComponent(
+                        href={`/products?categoryId=${category.id}&categoryName=${encodeURIComponent(
                           category.name
                         )}`}
                       >
@@ -156,7 +156,7 @@ export default function ProductsSlider({
               {brands.map((brand) => (
                 <SwiperSlide key={brand.id}>
                   <Link
-                    href={`/Products?brandId=${brand.id}&brandName=${encodeURIComponent(
+                    href={`/products?brandId=${brand.id}&brandName=${encodeURIComponent(
                       brand.name
                     )}`}
                   >

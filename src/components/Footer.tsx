@@ -12,10 +12,18 @@ export default function Footer() {
   const [open, setOpen] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllProducts, setShowAllProducts] = useState(false);
+  const INITIAL_VISIBLE_PRODUCTS = 4;
+
 
   const toggleSection = (section: string) => {
     setOpen(open === section ? null : section);
   };
+
+  const visibleCategories = showAllProducts
+    ? categories
+    : categories.slice(0, INITIAL_VISIBLE_PRODUCTS);
+
 
   useEffect(() => {
     async function fetchCategories() {
@@ -67,10 +75,20 @@ export default function Footer() {
               <p className="mt-3 text-sm">No products found.</p>
             ) : (
               <ul className="mt-3 space-y-2 text-sm">
-                {categories.map((cat) => (
+                {visibleCategories.map((cat) => (
                   <li key={cat.id}>• {cat.name}</li>
                 ))}
+
+                {categories.length > INITIAL_VISIBLE_PRODUCTS && (
+                  <li
+                    className="cursor-pointer text-yellow-400 hover:underline"
+                    onClick={() => setShowAllProducts(!showAllProducts)}
+                  >
+                    • {showAllProducts ? "Less" : "More"}
+                  </li>
+                )}
               </ul>
+
             )}
           </div>
 

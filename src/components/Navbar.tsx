@@ -64,7 +64,7 @@ export default function Navbar({ type = "transparent" }: { type?: string }) {
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-              <Link href="/Cart">
+              <Link href="/cart">
                 <ShoppingCart className="w-5 h-5 cursor-pointer" />
               </Link>
               <Link href={user ? "/profile" : "/login"}>
@@ -109,7 +109,7 @@ export default function Navbar({ type = "transparent" }: { type?: string }) {
             <Link onClick={() => setOpen(false)} href="/contact" className="text-black text-2xl font-medium">Contact Us</Link>
 
             <div className="flex gap-6 pt-2">
-              <Link href="/Cart">
+              <Link href="/cart">
                 <ShoppingCart className="w-7 h-7 text-black" />
               </Link>
               <Link href={user ? "/profile" : "/login"}>
