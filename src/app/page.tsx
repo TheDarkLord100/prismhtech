@@ -6,6 +6,7 @@ import MemorialSection from "@/components/MemorialSection";
 import ProductsSlider from "@/components/ProductsSlider";
 import { useEffect, useState } from "react";
 import type { Category, Brand } from "@/types/entities";
+import Image from "next/image";
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -97,7 +98,7 @@ export default function HomePage() {
           playsInline
           className="object-cover w-full h-full absolute inset-0"
         />
-        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(7,7,7,1)_0%,rgba(15,32,40,0)_24%)]"/>
+        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_bottom,rgba(7,7,7,1)_0%,rgba(15,32,40,0)_24%)]" />
 
         <div className="absolute bottom-20 right-5 md:right-10 lg:right-20 w-4/5 lg:w-2/5 text-left">
           <div
@@ -125,6 +126,38 @@ export default function HomePage() {
       </div>
 
       <ProductsSlider categories={categories} brands={brands} />
+
+      <section className="w-full py-20 px-8 bg-transparent">
+        <div className="max-w-7xl mx-auto flex flex-col gap-12">
+
+          {/* TEXT BLOCK */}
+          <div className="w-full flex flex-col gap-6 items-start text-left">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-white text-lg uppercase tracking-widest font-light">
+                OUR
+              </h3>
+              <h2 className="text-5xl font-bold text-[#F4E16E] italic leading-tight">
+                CHANNEL <br /> PARTNERS
+              </h2>
+              <div className="w-12 h-0.5 bg-gray-400 my-2"></div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* FULL WIDTH IMAGE */}
+        <div className="w-full mt-12 px-24">
+          <Image
+            src="/Assets/channel.png"
+            alt="Channel partners"
+            width={1920}
+            height={400}
+            className="w-full object-contain"
+            unoptimized
+          />
+        </div>
+      </section>
+
       <MemorialSection />
       <Footer />
     </main>

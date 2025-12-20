@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Shield, MapPin, CreditCard, Package } from "lucide-react";
 import Link from "next/link";
+import { useUserStore } from "@/utils/store/userStore";
+import { useRouter } from "next/navigation";
 
 export default function Profile() {
   const accountOptions = [
@@ -25,13 +27,10 @@ export default function Profile() {
       icon: <MapPin size={32} className="text-green-600" />,
       href: "/profile/addresses",
     },
-    {
-      title: "Payment options",
-      desc: "Edit or add payment methods",
-      icon: <CreditCard size={32} className="text-green-600" />,
-      href: "/profile/payments",
-    },
   ];
+
+  const { logout } = useUserStore();
+  const router = useRouter();
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -39,9 +38,19 @@ export default function Profile() {
 
       {/* Added padding-top to avoid overlap with fixed navbar */}
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-8">Your Account</h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-semibold mb-8">Login and Security</h1>
+          <button
+            onClick={async () => {
+              await logout();
+              router.push("/login");
+            }}
+            className="bg-yellow-400 text-white py-2 px-6 rounded-lg font-semibold"
+          >
+            Logout
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {accountOptions.map((item) => (
             <Link
               key={item.title}

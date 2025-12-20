@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -18,16 +17,16 @@ export async function GET(req: Request) {
     const supabase = createClient(cookies());
 
     /* -------------------------------------------------- */
-    /* Get current user (for is_liked)                     */
+    /* Current user (likes)                               */
     /* -------------------------------------------------- */
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     /* -------------------------------------------------- */
-    /* Base query                                         */
+    /* Fetch questions ONLY                               */
     /* -------------------------------------------------- */
-    let query = supabase
+    let questionQuery = supabase
       .from("questions")
       .select(
         `
@@ -35,52 +34,54 @@ export async function GET(req: Request) {
         title,
         body,
         created_at,
-        answers(body),
         question_likes(user_id),
         question_images(image_url)
-      `,
+        `,
         { count: "exact" }
       )
       .eq("is_public", true);
 
-    /* -------------------------------------------------- */
-    /* Filter: answered only                              */
-    /* -------------------------------------------------- */
-    if (filter === "answered") {
-      query = query.not("answers", "is", null);
-    }
-
-    /* -------------------------------------------------- */
-    /* Search                                             */
-    /* -------------------------------------------------- */
     if (search) {
-      query = query.or(
+      questionQuery = questionQuery.or(
         `title.ilike.%${search}%,body.ilike.%${search}%`
       );
     }
 
-    /* -------------------------------------------------- */
-    /* Sorting                                            */
-    /* -------------------------------------------------- */
-    query =
+    questionQuery =
       sort === "old"
-        ? query.order("created_at", { ascending: true })
-        : query.order("created_at", { ascending: false });
+        ? questionQuery.order("created_at", { ascending: true })
+        : questionQuery.order("created_at", { ascending: false });
 
-    /* -------------------------------------------------- */
-    /* Pagination                                         */
-    /* -------------------------------------------------- */
-    query = query.range(offset, offset + limit - 1);
+    questionQuery = questionQuery.range(offset, offset + limit - 1);
 
-    const { data, error, count } = await query;
+    const { data: questionsData, error, count } =
+      await questionQuery;
 
     if (error) throw error;
+
+    const questionIds = questionsData.map(q => q.id);
+
+    /* -------------------------------------------------- */
+    /* Fetch answers separately                           */
+    /* -------------------------------------------------- */
+    const { data: answersData, error: answersError } =
+      await supabase
+        .from("answers")
+        .select("question_id, body, created_at")
+        .in("question_id", questionIds);
+
+    if (answersError) throw answersError;
+
+    const answersMap = new Map(
+      (answersData || []).map(a => [a.question_id, a])
+    );
 
     /* -------------------------------------------------- */
     /* Normalize response                                 */
     /* -------------------------------------------------- */
-    const questions = (data || []).map((q: any) => {
+    const questions = questionsData.map((q: any) => {
       const likes = q.question_likes || [];
+      const answer = answersMap.get(q.id);
 
       return {
         id: q.id,
@@ -88,8 +89,9 @@ export async function GET(req: Request) {
         body: q.body,
         created_at: q.created_at,
 
-        has_answer: Array.isArray(q.answers) && q.answers.length > 0,
-        answer: q.answers?.[0]?.body || null,
+        has_answer: !!answer,
+        answer: answer?.body || null,
+        answer_created_at: answer?.created_at || null,
 
         like_count: likes.length,
         is_liked: user
@@ -102,12 +104,20 @@ export async function GET(req: Request) {
       };
     });
 
+    /* -------------------------------------------------- */
+    /* Optional: filter answered on server                */
+    /* -------------------------------------------------- */
+    const finalQuestions =
+      filter === "answered"
+        ? questions.filter(q => q.has_answer)
+        : questions;
+
     return NextResponse.json({
-      questions,
+      questions: finalQuestions,
       page,
       totalPages: Math.ceil((count || 0) / limit),
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Questions API error:", err);
     return NextResponse.json(
       { error: "Failed to fetch questions" },
@@ -115,6 +125,8 @@ export async function GET(req: Request) {
     );
   }
 }
+
+
 
 
 export async function POST(req: Request) {
@@ -132,11 +144,11 @@ export async function POST(req: Request) {
 
     const { data: user, error: userError } = await supabase.auth.getUser();
 
-    const {data: userData, error: userDataError} = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", user?.user?.id || "")
-    .single();
+    const { data: userData, error: userDataError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user?.user?.id || "")
+      .single();
     /* 1️⃣ Create question */
     const { data: question, error } = await supabase
       .from("questions")

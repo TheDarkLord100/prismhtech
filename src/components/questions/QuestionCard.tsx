@@ -22,7 +22,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [likeCount, setLikeCount] = useState(question.like_count);
   const [liked, setLiked] = useState(question.is_liked);
-
+    console.log("question:", question); 
   const { user } = useUserStore();
 
   async function toggleLike(e: React.MouseEvent) {
