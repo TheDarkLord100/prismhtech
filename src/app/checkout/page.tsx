@@ -40,15 +40,6 @@ export default function CheckoutPage() {
         }
     }, [addresses]);
 
-    useEffect(() => {
-        if (addresses.length > 0) {
-            const defaultAddr = addresses.find((a) => a.default);
-            const defaultId = defaultAddr ? defaultAddr.adr_id : addresses[0].adr_id;
-            setSelectedDeliveryId(defaultId);
-            setSelectedBillingId(defaultId);
-        }
-    }, [addresses]);
-
     const totalItems = getTotalItems();
     const totalPrice = getTotalPrice();
 

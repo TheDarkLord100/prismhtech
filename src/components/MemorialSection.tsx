@@ -38,8 +38,8 @@ export default function MemorialSection() {
           <Image
             src="/Dadaji/Dadaji.png"
             alt="Dada ji’s Name"
-            width={300}
-            height={400}
+            width={450}
+            height={600}
             className="rounded-2xl object-cover shadow-lg brightness-110"
           />
         </div>

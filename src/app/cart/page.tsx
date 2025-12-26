@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useCartStore } from "@/utils/store/useCartStore";
+import { useUserStore } from "@/utils/store/userStore";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import CartItem from "./cartItem";
@@ -17,12 +18,23 @@ export default function CartPage() {
     getTotalPrice
   } = useCartStore();
 
+  const { user } = useUserStore();
+
   const router = useRouter();
 
   const items = cart?.items || [];
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
 
+  const handleCheckout = () => {
+    if (!user) {
+
+      router.push("/login?redirectedFrom=/cart&reason=auth");
+      return;
+    }
+
+    router.push("/checkout");
+  };
 
 
   return (
@@ -130,9 +142,9 @@ export default function CartPage() {
                 <br />
 
                 <button
-                  onClick={() => router.push("/checkout")}
+                  onClick={handleCheckout}
                   className="w-full bg-yellow-400 hover:bg-yellow-500 text-white py-3 rounded-4xl font-medium text-lg">
-                  Proceed to Checkout
+                  {user ? "Proceed to Checkout" : "Login to Checkout"}
                 </button>
               </aside>
             </div>
