@@ -78,7 +78,7 @@ export default function ProductDetailsPage() {
               onClick={() => router.push("/products")}
             >
               Products
-              <span className="absolute left-0 bottom-0 w-full h-[3px] bg-purple-500"></span>
+              <span className="absolute left-0 bottom-0 w-full h-[3px] bg-yellow-400"></span>
             </span>
             {" > "}
             {categoryOrBrand && (
@@ -88,7 +88,7 @@ export default function ProductDetailsPage() {
                   onClick={() => router.back()}
                 >
                   {categoryOrBrand}
-                  <span className="absolute left-0 bottom-0 w-full h-[3px] bg-purple-500"></span>
+                  <span className="absolute left-0 bottom-0 w-full h-[3px] bg-yellow-400"></span>
                 </span>
                 {" > "}
               </>

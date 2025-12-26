@@ -10,7 +10,6 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item, updateCartItem, removeFromCart }: CartItemProps) {
-    console.log("Rendering CartItem with item:", item);
 
     const imageUrl =
         item.product.productImages &&
@@ -48,7 +47,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
                 </div>
 
                 {/* Quantity box */}
-                <div className="mt-2 flex items-center border border-purple-500 rounded-full px-2 py-1 w-fit gap-2">
+                <div className="mt-2 flex items-center border border-yellow-400 rounded-full px-2 py-1 w-fit gap-2">
                     <button
                         className="text-gray-600 hover:text-red-500"
                         onClick={() => updateCartItem(item.id, item.quantity - 1)}
@@ -59,7 +58,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
                     <span>{item.quantity}</span>
 
                     <button
-                        className="text-purple-600 font-medium"
+                        className="text-yellow-400 font-medium"
                         onClick={() => updateCartItem(item.id, item.quantity + 1)}
                     >
                         +
@@ -108,7 +107,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
 
                         {/* Quantity controls */}
                         <div className="mt-3 flex items-center gap-3 text-xs text-gray-600 flex-wrap">
-                            <div className="flex items-center border border-purple-500 rounded-full px-2 py-0.5 gap-2">
+                            <div className="flex items-center border border-yellow-400 rounded-full px-2 py-0.5 gap-2">
                                 <button
                                     className="text-gray-600 hover:text-red-500"
                                     onClick={() => updateCartItem(item.id, item.quantity - 1)}
@@ -119,7 +118,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
                                 <span>{item.quantity}</span>
 
                                 <button
-                                    className="text-purple-600 font-medium"
+                                    className="text-yellow-400 font-medium"
                                     onClick={() => updateCartItem(item.id, item.quantity + 1)}
                                 >
                                     +
