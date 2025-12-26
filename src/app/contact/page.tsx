@@ -3,17 +3,15 @@
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Notification, notify } from "@/utils/notify";
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    setSuccess("");
-    setError("");
+    const form = e.currentTarget;
 
     const formData = new FormData(e.currentTarget);
 
@@ -35,10 +33,10 @@ export default function ContactPage() {
 
       if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-      setSuccess("Message sent successfully!");
-      e.currentTarget.reset();
+      notify(Notification.SUCCESS, "Message sent successfully!");
+      form.reset();
     } catch (err: any) {
-      setError(err.message);
+        notify(Notification.FAILURE, err.message);
     } finally {
       setLoading(false);
     }
@@ -59,24 +57,24 @@ export default function ContactPage() {
 
           {/* LEFT */}
           <div className="space-y-6">
-            <h2 className="text-3xl font-semibold text-yellow-300">
+            <h2 className="text-3xl font-semibold text-yellow-400">
               Contact Information
             </h2>
 
             <div>
-              <p className="font-medium text-yellow-300">Phone</p>
-              <p>+91 98765 43210</p>
+              <p className="font-medium text-yellow-400">Phone</p>
+              <p>0129-2414130, 2413279</p>
             </div>
 
             <div>
-              <p className="font-medium text-yellow-300">Email</p>
-              <p>support@example.com</p>
+              <p className="font-medium text-yellow-400">Email</p>
+              <p>vinod@perveshimpex.com</p>
             </div>
 
             {/* Google Maps */}
             <div className="mt-6 rounded-xl overflow-hidden border border-white/20">
               <iframe
-                src="https://www.google.com/maps?q=28.545092,77.192147&z=15&output=embed"
+                src="https://www.google.com/maps?q=28.389751451522965, 77.30260197892464&z=15&output=embed"
                 width="100%"
                 height="220"
                 loading="lazy"
@@ -99,12 +97,9 @@ export default function ContactPage() {
             <textarea name="message" rows={4} required placeholder="Message"
               className="w-full rounded-lg bg-white/20 px-4 py-3 focus:ring-2 focus:ring-yellow-400 outline-none" />
 
-            {success && <p className="text-green-300">{success}</p>}
-            {error && <p className="text-red-300">{error}</p>}
-
             <button
               disabled={loading}
-              className="w-full bg-yellow-400 text-[#16463B] font-semibold py-3 rounded-lg hover:bg-yellow-300 transition disabled:opacity-60"
+              className="w-full bg-yellow-400 text-[#16463B] font-semibold py-3 rounded-lg hover:bg-yellow-400 transition disabled:opacity-60"
             >
               {loading ? "Sending..." : "Send Message"}
             </button>
