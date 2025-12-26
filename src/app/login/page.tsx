@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/Footer";
 import { notify, Notification } from "@/utils/notify";
-import { useUserStore } from "@/utils/store/userStore"; // ✅ import store
+import { useUserStore } from "@/utils/store/userStore";
+import { useCartStore } from "@/utils/store/useCartStore";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,13 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectedFrom") || "/";
+  const reason = searchParams.get("reason") || "";
+
+  useEffect(() => {
+    if (reason === "auth") {
+      notify(Notification.FAILURE, "You must login to proceed further");
+    }
+  }, [reason]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +44,8 @@ export default function LoginPage() {
 
       await useUserStore.getState().fetchUser();
 
+      await useCartStore.getState().mergeGuestCart();
+      
       router.push(redirectTo);
     } catch (error) {
       if (error instanceof Error) {

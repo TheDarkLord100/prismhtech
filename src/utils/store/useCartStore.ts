@@ -21,9 +21,10 @@ interface CartStore {
   addToCart: (product: Product, variant: Variant, quantity: number) => Promise<void>;
   updateCartItem: (cartItemId: string, quantity: number) => Promise<void>;
   removeFromCart: (id: string) => Promise<void>;
-  clearCart: ({invisible}: {invisible: boolean}) => Promise<void>;
+  clearCart: ({ invisible }: { invisible: boolean }) => Promise<void>;
   fetchCart: () => Promise<void>;
-  
+  mergeGuestCart: () => Promise<void>;
+
   getTotalItems: () => number;
   getTotalPrice: () => number;
 }
@@ -38,7 +39,8 @@ export const useCartStore = create<CartStore>()(
 
       addToCart: async (product, variant, quantity) => {
         set({ loading: true, error: null });
-
+        console.log("Adding to cart:", { product, variant, quantity });
+        console.log("Current cart state:", get().cart);
         const { user } = useUserStore.getState();
         const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
         if (!user) {
@@ -65,6 +67,7 @@ export const useCartStore = create<CartStore>()(
           if (!response.ok) throw new Error("Failed to add item to cart");
 
           const cart = await response.json();
+          console.log("Updated local cart:", cart);
           set({ cart, loading: false, message: "Item added to cart" });
         } catch (error: any) {
           set({ loading: false, error: error.message });
@@ -138,7 +141,7 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      clearCart: async ({invisible = false}) => {
+      clearCart: async ({ invisible = false }) => {
         const { user } = useUserStore.getState();
         const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
 
@@ -188,7 +191,44 @@ export const useCartStore = create<CartStore>()(
         }
 
       },
+      mergeGuestCart: async () => {
+        const { user } = useUserStore.getState();
+        const cart = get().cart;
 
+        if (!user) return;
+        if (!cart || cart.id !== "local-cart") return;
+        if (!cart.items || cart.items.length === 0) return;
+
+        const payload = cart.items.map(item => ({
+          product_id: item.product.id,
+          variant_id: item.variant.pvr_id,
+          quantity: item.quantity,
+        }));
+
+        set({ loading: true, error: null });
+
+        try {
+          const res = await fetch("/api/cart/merge", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ items: payload }),
+          });
+
+          if (!res.ok) throw new Error("Cart merge failed");
+
+          const mergedCart = await res.json();
+
+          // 🔥 DB cart becomes source of truth
+          set({
+            cart: mergedCart,
+            loading: false,
+          });
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
+      },
+      
       getTotalItems: () => {
         const cart = get().cart;
         if (!cart || !cart.items) return 0;
@@ -204,6 +244,7 @@ export const useCartStore = create<CartStore>()(
         }, 0);
       },
     }),
+
     {
       name: "cart-storage", // persist in localStorage
     }

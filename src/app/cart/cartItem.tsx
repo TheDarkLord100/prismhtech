@@ -10,6 +10,14 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item, updateCartItem, removeFromCart }: CartItemProps) {
+    console.log("Rendering CartItem with item:", item);
+
+    const imageUrl =
+        item.product.productImages &&
+            item.product.productImages.length > 0 &&
+            item.product.productImages[0].image_url
+            ? item.product.productImages[0].image_url
+            : "/Assets/Category1.png";
     return (
         <div className="py-6">
 
@@ -19,7 +27,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
                 {/* Image */}
                 <div className="relative w-full h-48 rounded-md overflow-hidden border">
                     <Image
-                        src={item.product.productImages[0].image_url}
+                        src={imageUrl}
                         alt={item.product.name}
                         fill
                         className="object-cover"
@@ -83,7 +91,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
                     {/* Image */}
                     <div className="relative w-28 h-24 rounded-md overflow-hidden border">
                         <Image
-                            src={item.product.productImages[0].image_url}
+                            src={imageUrl}
                             alt={item.product.name}
                             fill
                             className="object-cover"
