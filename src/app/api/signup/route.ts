@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server"; 
+import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import { validateName, validatePhone, validateDOB, 
+  validateLocation, validateGSTIN, validatePassword,
+validateEmail } from "@/utils/userValidator";
 
 interface SignupRequestBody {
   email: string;
   password: string;
   name: string;
   phone: string;
-  dob: string;       
+  dob: string;
   location: string;
-  gstin?: string;    
+  gstin: string;
 }
 
 export async function POST(req: Request) {
@@ -22,7 +25,21 @@ export async function POST(req: Request) {
     if (!email || !password || !name || !phone || !dob || !location) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-    
+
+    const validators = [
+      validateName(name),
+      validatePhone(phone),
+      validateDOB(dob),
+      validateLocation(location),
+      validateGSTIN(gstin),
+      validatePassword(password),
+      validateEmail(email),
+    ];
+    const errors = validators.filter((v) => v !== null);
+    if (errors.length > 0) {
+      return NextResponse.json({ error: errors[0] }, { status: 400 });
+    }
+
     const supabase = createClient(cookies());
 
     // Create auth user

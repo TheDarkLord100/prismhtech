@@ -7,6 +7,7 @@ import ProductsSlider from "@/components/ProductsSlider";
 import { useEffect, useState } from "react";
 import type { Category, Brand } from "@/types/entities";
 import Image from "next/image";
+import LogoMosaic from "@/components/LogoMosaic";
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -146,15 +147,8 @@ export default function HomePage() {
         </div>
 
         {/* FULL WIDTH IMAGE */}
-        <div className="w-full mt-12 px-24">
-          <Image
-            src="/Assets/channel.png"
-            alt="Channel partners"
-            width={1920}
-            height={400}
-            className="w-full object-contain"
-            unoptimized
-          />
+        <div className="w-full mt-12 px-4 md:px-16">
+          <LogoMosaic />
         </div>
       </section>
 

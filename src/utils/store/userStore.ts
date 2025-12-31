@@ -3,41 +3,68 @@ import { persist } from "zustand/middleware";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@/types/entities";
 
+type EditableField = "name" | "phone" | "dob" | "location";
+
 interface UserStore {
     user: User | null;
     setUser: (user: User | null) => void;
     fetchUser: () => Promise<void>;
+    updateUserField: (
+        field: EditableField,
+        value: string
+    ) => Promise<void>;
     logout: () => Promise<void>;
 }
 
 export const useUserStore = create<UserStore>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             user: null,
 
             setUser: (user) => set({ user }),
 
             fetchUser: async () => {
-                const supabase = createClient();
-                const { data: { user }, error } = await supabase.auth.getUser();
-                if (error || !user) {
-                    console.error("Error fetching user:", error?.message);
+                try {
+                    const res = await fetch("/api/user/me");
+
+                    if (!res.ok) {
+                        set({ user: null });
+                        return;
+                    }
+
+                    const data = await res.json();
+                    set({ user: data as User });
+                } catch {
                     set({ user: null });
-                    return;
+                }
+            },
+
+            updateUserField: async (field, value) => {
+                const currentUser = get().user;
+                if (!currentUser) return;
+
+                // optimistic update
+                set({
+                    user: {
+                        ...currentUser,
+                        [field]: value,
+                    },
+                });
+
+                const res = await fetch("/api/user/update", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ field, value }),
+                });
+
+                if (!res.ok) {
+                    set({ user: currentUser });
+                    const data = await res.json();
+                    throw new Error(data.error || "Update failed");
                 }
 
-                const { data: userData, error: dbError } = await supabase
-                    .from("users")
-                    .select("*")
-                    .eq("id", user.id)
-                    .single();
-
-                if (dbError) {
-                    console.error("Error fetching user details:", dbError.message);
-                    set({ user: { id: user.id, email: user.email! } }); // fallback
-                } else {
-                    set({ user: userData as User });
-                }
+                const updatedUser = await res.json();
+                set({ user: updatedUser });
             },
 
             logout: async () => {
@@ -47,7 +74,7 @@ export const useUserStore = create<UserStore>()(
             },
         }),
         {
-            name: "user-storage", // persist in localStorage
+            name: "user-storage",
         }
     )
 );

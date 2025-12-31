@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { useSignupStore } from "@/utils/store/signupStore";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Notification, notify } from "@/utils/notify";
+import {
+  validateName,
+  validatePhone,
+  validateDOB,
+  validateLocation,
+} from "@/utils/userValidator";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -26,6 +33,19 @@ export default function SignUpPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validators = [
+      validateName(formData.name),
+      validatePhone(formData.phone),
+      validateDOB(formData.dob),
+      validateLocation(formData.location),
+    ]
+    const errors = validators.filter((v) => v !== null);
+    if (errors.length > 0) {
+      notify(Notification.FAILURE, errors[0] as string);
+      return;
+    }
+    
     setData(formData); // save into store
     router.push("/userdetails"); // move to next page
   };
