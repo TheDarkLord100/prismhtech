@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useUserStore } from "@/utils/store/userStore";
 import { useRouter } from "next/navigation";
+import EditProfileModal from "@/components/EditProfileModal";
+import { Notification, notify } from "@/utils/notify";
 
 export default function LoginSecurity() {
-  const { user, logout } = useUserStore();
+  const { user, logout, updateUserField } = useUserStore();
   const router = useRouter();
+  const [editField, setEditField] = useState<"name" | "phone" | "dob" | "location" | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -18,7 +21,7 @@ export default function LoginSecurity() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f5f5]">
-      <Navbar type="colored"/>
+      <Navbar type="colored" />
 
       {/* Page Content */}
       <main className="flex-grow pt-28 pb-16 px-4 sm:px-8 md:px-16 lg:px-32 xl:px-48 2xl:px-72">
@@ -50,7 +53,10 @@ export default function LoginSecurity() {
               <p className="font-medium text-lg">Name</p>
               <p className="text-gray-700">{user?.name}</p>
             </div>
-            <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
+            <button
+              onClick={() => setEditField("name")}
+              className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition"
+            >
               Edit
             </button>
           </div>
@@ -61,73 +67,62 @@ export default function LoginSecurity() {
               <p className="font-medium text-lg">Email</p>
               <p className="text-gray-700 break-all">{user?.email}</p>
             </div>
-            {/* <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
-              Edit
-            </button> */}
           </div>
 
           {/* Mobile */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 px-8">
-            <div className="max-w-lg">
-              <p className="font-medium text-lg">Primary mobile number</p>
-              <p className="text-gray-700">+91 {user?.phone}</p>
-              <p className="text-gray-500 text-sm mt-1">
-                Quickly sign in, easily recover passwords and receive security
-                notifications with this mobile number.
-              </p>
+            <div>
+              <p className="font-medium text-lg">Mobile Number</p>
+              <p className="text-gray-700">{user?.phone}</p>
             </div>
-            <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
+            <button
+              onClick={() => setEditField("phone")}
+              className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
               Edit
             </button>
           </div>
-
-          {/* Passkey */}
-          {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 px-8">
-            <div className="max-w-lg">
-              <p className="font-medium text-lg">Passkey</p>
-              <p className="text-gray-700 text-sm mt-1">
-                Sign in the same way you unlock your device by using your face,
-                fingerprint, or PIN.
-              </p>
-            </div>
-            <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
-              Edit
-            </button>
-          </div> */}
 
           {/* Password */}
-          <div className="flex flex-col md:flex-row justify-between items-start py-6 px-8">
-            <div className="max-w-lg">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 px-8">
+            <div>
               <p className="font-medium text-lg">Password</p>
-              <p className="text-gray-700">**********</p>
-              <div className="flex items-start gap-2 mt-2">
-                <span className="text-yellow-500 text-xl leading-none">⚠️</span>
-                <p className="text-gray-500 text-sm">
-                  To better protect your account, remove your password and use a
-                  passkey instead.
-                </p>
-              </div>
+              <p className="text-gray-700">*********</p>
             </div>
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/user/reset-password", {
+                    method: "POST",
+                  });
 
-            {/* Buttons vertically aligned */}
-            <div className="flex flex-col gap-3 mt-4 md:mt-0">
-              {/* <button className="w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
-                Remove
-              </button> */}
-              <button className="w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
-                Change Password
-              </button>
-            </div>
+                  const data = await res.json();
+
+                  if (!res.ok) throw new Error(data.error);
+
+                  notify(
+                    Notification.SUCCESS,
+                    "Password reset link has been sent to your email"
+                  );
+                } catch (err: any) {
+                  notify(
+                    Notification.FAILURE,
+                    err.message || "Failed to send reset link"
+                  );
+                }
+              }}
+              className="mt-3 md:mt-0 w-40 border border-gray-400 rounded-full px-6 py-2 text-sm hover:bg-gray-100 transition"
+            >
+              Change Password
+            </button>
+
           </div>
 
+          {/* GST Number */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 px-8">
             <div>
               <p className="font-medium text-lg">GST Number</p>
               <p className="text-gray-700">{user?.gstin}</p>
             </div>
-            {/* <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
-              Edit
-            </button> */}
           </div>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 px-8">
@@ -135,7 +130,9 @@ export default function LoginSecurity() {
               <p className="font-medium text-lg">Date of Birth</p>
               <p className="text-gray-700">{user?.dob}</p>
             </div>
-            <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
+            <button
+              onClick={() => setEditField("dob")}
+              className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
               Edit
             </button>
           </div>
@@ -145,30 +142,44 @@ export default function LoginSecurity() {
               <p className="font-medium text-lg">Location</p>
               <p className="text-gray-700">{user?.location}</p>
             </div>
-            <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
+            <button
+              onClick={() => setEditField("location")}
+              className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
               Edit
             </button>
           </div>
-
-          {/* 2-step Verification */}
-          {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 px-8">
-            <div className="max-w-lg">
-              <p className="font-medium text-lg">2-step verification</p>
-              <div className="flex items-start gap-2 mt-2">
-                <span className="text-yellow-500 text-xl leading-none">⚠️</span>
-                <p className="text-gray-500 text-sm">
-                  Add a layer of security. Require a code in addition to your
-                  password.
-                </p>
-              </div>
-            </div>
-            <button className="mt-3 md:mt-0 w-32 border border-gray-400 rounded-full px-8 py-2 text-sm hover:bg-gray-100 transition">
-              Edit
-            </button>
-          </div> */}
-
         </div>
       </main>
+      <EditProfileModal
+        isOpen={!!editField}
+        field={editField}
+        initialValue={
+          editField === "name"
+            ? user?.name ?? undefined
+            : editField === "phone"
+              ? user?.phone ?? undefined
+              : editField === "dob"
+                ? user?.dob ?? undefined
+                : editField === "location"
+                  ? user?.location ?? undefined
+                  : undefined
+        }
+        onClose={() => setEditField(null)}
+        onSave={async (value) => {
+          if (!editField) return;
+          try {
+            await updateUserField(editField, value);
+            notify(Notification.SUCCESS, "Profile updated successfully");
+            setEditField(null);
+          } catch (err: any) {
+            notify(
+              Notification.FAILURE,
+              err.message || "Failed to update profile"
+            );
+          }
+        }}
+      />
+
 
       <Footer />
     </div>

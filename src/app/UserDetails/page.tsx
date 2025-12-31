@@ -7,6 +7,7 @@ import { useSignupStore } from "@/utils/store/signupStore";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { notify, Notification } from "@/utils/notify";
+import { validateGSTIN, validatePassword, validateEmail } from "@/utils/userValidator";
 
 export default function UserDetailsPage() {
   const { data, setData, reset } = useSignupStore();
@@ -30,7 +31,25 @@ export default function UserDetailsPage() {
   const handleSubmit = async () => {
     if (loading) return;
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      notify(Notification.FAILURE, "Passwords do not match");
+      return;
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      notify(Notification.FAILURE, emailError);
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      notify(Notification.FAILURE, passwordError);
+      return;
+    }
+
+    const gstinError = validateGSTIN(gstin);
+    if (gstinError) {
+      notify(Notification.FAILURE, gstinError);
       return;
     }
 
@@ -45,23 +64,24 @@ export default function UserDetailsPage() {
 
     console.log("Final submitted data:", finalData);
 
-    const res = await fetch("/api/signup", 
-      { method: "POST",
+    const res = await fetch("/api/signup",
+      {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(finalData) }
+        body: JSON.stringify(finalData)
+      }
     );
 
-   const result = await res.json();
-   if (res.ok) {
+    const result = await res.json();
+    if (res.ok) {
       notify(Notification.SUCCESS, "Sign up successful! Please verify your email.");
-     router.push("/");
-   } else {
-     notify(Notification.FAILURE, "Error during sign up: " + result.error);
-   }
+      reset();
+      router.push("/");
+    } else {
+      notify(Notification.FAILURE, "Error during sign up: " + result.error);
+    }
 
     setLoading(false);
-
-    reset();
   };
 
   return (
