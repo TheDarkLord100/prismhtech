@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { notify, Notification } from "@/utils/notify";
 import { validateGSTIN, validatePassword, validateEmail } from "@/utils/userValidator";
+import { createClient } from "@/utils/supabase/client";
 
 export default function UserDetailsPage() {
   const { data, setData, reset } = useSignupStore();
@@ -54,6 +55,24 @@ export default function UserDetailsPage() {
     }
 
     setLoading(true);
+
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { name: data.name },
+      },
+    });
+
+    if (error) {
+      notify(Notification.FAILURE, error.message);
+      setLoading(false);
+      return;
+    }
+
 
     const finalData = {
       ...data,
