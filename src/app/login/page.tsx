@@ -7,8 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/Footer";
 import { notify, Notification } from "@/utils/notify";
-import { useUserStore } from "@/utils/store/userStore";
-import { useCartStore } from "@/utils/store/useCartStore";
+
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -24,7 +23,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (reason === "auth") {
-      notify(Notification.FAILURE, "You must login to proceed further");
+      notify(Notification.FAILURE, "Please log in to continue.");
+      router.replace("/login");
     }
   }, [reason]);
 
@@ -42,11 +42,8 @@ export default function LoginPage() {
 
       notify(Notification.SUCCESS, "Login successful!");
 
-      await useUserStore.getState().fetchUser();
+      router.push(`/auth/callback?redirectedFrom=${redirectTo}`);
 
-      await useCartStore.getState().mergeGuestCart();
-      
-      router.push(redirectTo);
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error during sign in:", error.message);
@@ -137,7 +134,10 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() =>
-                supabase.auth.signInWithOAuth({ provider: "google" })
+                supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: { redirectTo: `${window.location.origin}/auth/callback` }
+                })
               }
               className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#e0e0db] py-3 px-4 text-base font-bold text-[#16463B] hover:bg-gray-300 transition"
             >
