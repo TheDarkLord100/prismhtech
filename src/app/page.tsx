@@ -64,10 +64,10 @@ export default function HomePage() {
         <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_top,rgba(7,7,7,1)_0%,rgba(67,44,17,0)_24%)]" />
 
         {/* Content */}
-        <div className="absolute bottom-20 left-5 md:left-10 lg:left-20 w-4/5 lg:w-2/5 text-left z-10">
+        <div className="absolute bottom-20 left-5 md:left-10 lg:left-20 w-4/5 lg:w-2/5 text-left z-10 ">
           <div
             className="inline-block px-6 md:px-10 py-6 rounded-2xl
-      bg-white/5 backdrop-blur shadow-lg border-t border-b border-white/30"
+      bg-black/25 md:bg-white/5 backdrop-blur shadow-lg border-t border-b border-white/30"
           >
             <h3 className="text-lg md:text-2xl text-white/90 drop-shadow-lg">
               Pervesh Rasayan
@@ -77,7 +77,7 @@ export default function HomePage() {
               The Chemistry of Lasting Value
             </h1>
 
-            <p className="text-sm md:text-base lg:text-lg mt-6 md:mt-10 lg:mt-16 text-white drop-shadow-md">
+            <p className="text-sm md:text-base lg:text-lg mt-6 md:mt-10 lg:mt-16 text-white drop-shadow-md font-extralight md:font-normal">
               Every product we deliver and every relationship we cultivate must embody
               quality, trust and long-term value. We honor our past by renewing this everyday.
             </p>
@@ -104,7 +104,7 @@ export default function HomePage() {
         <div className="absolute bottom-20 right-5 md:right-10 lg:right-20 w-4/5 lg:w-2/5 text-left">
           <div
             className="inline-block px-6 md:px-10 py-6 rounded-2xl
-        bg-white/10 backdrop-blur shadow-lg border-t border-b border-white/30"
+        bg-black/25 md:bg-white/5 backdrop-blur shadow-lg border-t border-b border-white/30"
           >
             <h3 className="text-lg md:text-2xl font-regular text-white/90 drop-shadow-lg">
               Quality
@@ -147,9 +147,7 @@ export default function HomePage() {
         </div>
 
         {/* FULL WIDTH IMAGE */}
-        <div className="w-full mt-12 px-4 md:px-16">
           <LogoMosaic />
-        </div>
       </section>
 
       <MemorialSection />
