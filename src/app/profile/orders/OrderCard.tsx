@@ -87,7 +87,7 @@ const OrderHeader = ({ order }: { order: Order }) => {
 
 
 export default function OrderCard({ order }: { order: Order }) {
-    const item = order.items[0];
+    const item = order.items?.[0];
     const router = useRouter();
 
     return (
@@ -98,7 +98,7 @@ export default function OrderCard({ order }: { order: Order }) {
 
             <div className="p-6">
                 <h3 className="text-lg font-bold mb-4 text-black">
-                    {item.product?.name} {order.items.length > 1 ? `and ${order.items.length - 1} more item${order.items.length - 1 > 1 ? "s" : ""}` : ""}
+                    {item!.product?.name} {order.items!.length > 1 ? `and ${order.items!.length - 1} more item${order.items!.length - 1 > 1 ? "s" : ""}` : ""}
                 </h3>
 
                 {/* FLEX WRAPPER — mobile = column, desktop = row */}
@@ -107,8 +107,8 @@ export default function OrderCard({ order }: { order: Order }) {
                     {/* IMAGE — centered on mobile */}
                     <div className="w-64 h-64 overflow-hidden rounded-xl mx-auto lg:mx-0">
                         <img
-                            src={item.product?.productImages?.[0]?.image_url ?? "/placeholder.png"}
-                            alt={item.product?.name ?? "Product"}
+                            src={item!.product?.productImages?.[0]?.image_url ?? "/placeholder.png"}
+                            alt={item!.product?.name ?? "Product"}
                             className="object-cover w-full h-full"
                         />
                     </div>
