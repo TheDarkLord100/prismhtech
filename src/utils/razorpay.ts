@@ -3,7 +3,9 @@ export async function handleProceedToPayment({
   selectedBillingId,
   sameAsDelivery,
   cart,
-  totalPrice,
+  subtotal,
+  gst,
+  totalAmount,
   user,
   clearCart,
 }: {
@@ -11,12 +13,24 @@ export async function handleProceedToPayment({
   selectedBillingId: string | null;
   sameAsDelivery: boolean;
   cart: any;
-  totalPrice: number;
+  subtotal: number;
+  gst: {
+    rate: number;
+    type: "CGST_SGST" | "IGST";
+    cgst: number;
+    sgst: number;
+    igst: number;
+  }
+  totalAmount: number;
   user: any;
-  clearCart: ({invisible}: {invisible: boolean}) => Promise<void>;
+  clearCart: ({ invisible }: { invisible: boolean }) => Promise<void>;
 }) {
   if (!selectedDeliveryId) {
     alert("Please select a delivery address before proceeding to payment.");
+    return;
+  }
+  if (!sameAsDelivery && !selectedBillingId) {
+    alert("Please select a billing address before proceeding.");
     return;
   }
 
@@ -51,7 +65,11 @@ export async function handleProceedToPayment({
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({
-      amount: totalPrice,
+      pricing: {
+        subtotal,
+        gst,
+        total: totalAmount,
+      },
       receipt: `rcpt_${Date.now()}`,
       ship_adr_id: selectedDeliveryId,
       bill_adr_id: sameAsDelivery ? selectedDeliveryId : selectedBillingId,
@@ -75,7 +93,7 @@ export async function handleProceedToPayment({
     name: "Pervesh Rasayan Pvt. Ltd.",
     description: "Order Id: " + orderId,
     order_id: razorpayOrder.id,
-    
+
     handler: async function (response: any) {
       const verifyRes = await fetch("/api/verify-payment", {
         method: "POST",
@@ -93,7 +111,7 @@ export async function handleProceedToPayment({
       const verifyData = await verifyRes.json();
 
       if (verifyData.success) {
-        await clearCart({invisible: true});
+        await clearCart({ invisible: true });
         window.location.href = `/order?order_id=${orderId}`;
       } else {
         alert("Payment verification failed: " + verifyData.message);

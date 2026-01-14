@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import { createAdminSupabaseClient } from "./adminClient";
+import { createAdminSupabaseClient } from "@/utils/supabase/adminClient";
+import { sendOrderPlacedEmail } from "@/utils/OrderPlacedEmail";
 
 export async function POST(request: Request) {
     try {
@@ -20,6 +21,32 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
+        const { data: orderData, error: orderFetchError } = await supabase
+            .from("Orders")
+            .select("*")
+            .eq("id", order_id)
+            .eq("user_id", user.user.id)
+            .single();
+
+        if (orderFetchError || !orderData) {
+            return NextResponse.json(
+                { success: false, error: "Invalid order" },
+                { status: 400 }
+            );
+        }
+
+        if (orderData.razorpay_order_id !== razorpay_order_id) {
+            return NextResponse.json(
+                { success: false, error: "Order mismatch" },
+                { status: 400 }
+            );
+        }
+
+        if (orderData.status === "PAID") {
+            return NextResponse.json({ success: true }); // idempotent
+        }
+
+
         const generated_signature = crypto
             .createHmac("sha256", process.env.RAZORPAY_SECRET!)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
@@ -29,52 +56,58 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 400 });
         }
 
-        const { data: orderData, error: orderError } = await supabase
-            .from("Orders")
-            .update({
-                status: "Order Placed",
-                status_description: "Order placed successfully",
-            })
-            .eq("razorpay_order_id", razorpay_order_id)
-            .select()
-            .single();
+        const supabaseAdmin = createAdminSupabaseClient();
 
-        if (orderError) {
-            throw orderError;
-        }
-
-        const { data: existingPayment } = await supabase
+        // Insert payment (idempotent)
+        const { data: existingPayment } = await supabaseAdmin
             .from("payments")
             .select("id")
             .eq("payment_id", razorpay_payment_id)
             .maybeSingle();
 
         if (!existingPayment) {
-            const supabaseAdmin = createAdminSupabaseClient();
-             
-            const payment_method = await fetchRazorpayPaymentMethod(razorpay_payment_id);
+            const payment_method = await fetchRazorpayPaymentMethod(
+                razorpay_payment_id
+            );
 
             const { error: paymentError } = await supabaseAdmin
                 .from("payments")
                 .insert({
                     order_id: orderData.id,
-                    amount: orderData.total_amount,
                     payment_id: razorpay_payment_id,
                     transaction_id,
                     method: payment_method,
-                    status: "Success",
-                })
-                .select()
-                .single();
+                    status: "SUCCESS",
+                    amount: Math.round(orderData.total_amount * 100), // paise
+                    currency: "INR",
+                });
 
             if (paymentError) {
-                console.error("Payment insert failed:", paymentError);
-                return NextResponse.json(
-                    { success: false, error: "Payment insert failed" },
-                    { status: 500 }
-                );
+                throw paymentError;
             }
         }
+
+        // Update order status
+
+        const { error: orderUpdateError } = await supabase
+            .from("Orders")
+            .update({
+                status: "Order Placed",
+                status_description: "Payment successful, order placed",
+            })
+            .eq("id", orderData.id);
+
+        if (orderUpdateError) {
+            throw orderUpdateError;
+        }
+
+        try {
+            await sendOrderPlacedEmail({ orderId: orderData.id });
+        } catch (err) {
+            console.error("Order placed email failed:", err);
+            // DO NOT fail the whole flow if email fails
+        }
+
 
         const { data: cart } = await supabase
             .from("carts")
@@ -95,24 +128,24 @@ export async function POST(request: Request) {
 }
 
 async function fetchRazorpayPaymentMethod(paymentId: string) {
-  const auth = Buffer.from(
-    `${process.env.NEXT_PUBLIC_RAZORYPAY_KEY}:${process.env.RAZORPAY_SECRET}`
-  ).toString("base64");
+    const auth = Buffer.from(
+        `${process.env.NEXT_PUBLIC_RAZORYPAY_KEY}:${process.env.RAZORPAY_SECRET}`
+    ).toString("base64");
 
-  const res = await fetch(
-    `https://api.razorpay.com/v1/payments/${paymentId}`,
-    {
-      headers: {
-        Authorization: `Basic ${auth}`,
-      },
+    const res = await fetch(
+        `https://api.razorpay.com/v1/payments/${paymentId}`,
+        {
+            headers: {
+                Authorization: `Basic ${auth}`,
+            },
+        }
+    );
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error("Failed to fetch Razorpay payment: " + text);
     }
-  );
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error("Failed to fetch Razorpay payment: " + text);
-  }
-
-  const data = await res.json();
-  return data.method ?? null; // "upi" | "card" | "netbanking" | etc.
+    const data = await res.json();
+    return data.method ?? null; // "upi" | "card" | "netbanking" | etc.
 }

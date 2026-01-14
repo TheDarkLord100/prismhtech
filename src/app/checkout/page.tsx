@@ -26,6 +26,13 @@ export default function CheckoutPage() {
     const [showModal, setShowModal] = useState(false);
     const { user } = useUserStore();
 
+    const SELLER_STATE = "Haryana";
+    const GST_RATE = 0.18;
+
+    const isCheckoutAllowed =
+        !!selectedDeliveryId &&
+        (sameAsDelivery || !!selectedBillingId);
+
     useEffect(() => {
         const loadAddresses = async () => await fetchAddresses();
         loadAddresses();
@@ -40,8 +47,32 @@ export default function CheckoutPage() {
         }
     }, [addresses]);
 
+    useEffect(() => {
+        if (sameAsDelivery && selectedDeliveryId) {
+            setSelectedBillingId(selectedDeliveryId);
+        }
+    }, [sameAsDelivery, selectedDeliveryId]);
+
+
     const totalItems = getTotalItems();
     const totalPrice = getTotalPrice();
+
+    const deliveryAddress = addresses.find(
+        (a) => a.adr_id === selectedDeliveryId
+    );
+
+    const isIntraState =
+        deliveryAddress?.state?.toLowerCase() === SELLER_STATE.toLowerCase();
+
+    const gstAmount = isCheckoutAllowed
+        ? totalPrice * GST_RATE
+        : 0;
+
+    const cgst = isIntraState ? gstAmount / 2 : 0;
+    const sgst = isIntraState ? gstAmount / 2 : 0;
+    const igst = !isIntraState ? gstAmount : 0;
+
+    const grandTotal = totalPrice + gstAmount;
 
     const handleSaveAddress = (addr: Address) => {
         if (editAddress) {
@@ -127,26 +158,68 @@ export default function CheckoutPage() {
 
                     {/* RIGHT SECTION (Summary) */}
                     <aside className="bg-[#FFFDEE] w-full lg:w-80 rounded-2xl shadow-md p-6 h-fit">
-                        <p className="text-lg mb-3">
-                            Subtotal ({totalItems} items): <span className="font-bold">₹{totalPrice.toFixed(1)}</span>
+                        <p className="text-lg mb-2">
+                            Subtotal ({totalItems} items):{" "}
+                            <span className="font-bold">₹{totalPrice.toFixed(2)}</span>
                         </p>
+
+                        {isCheckoutAllowed && deliveryAddress?.state && (
+                            <>
+                                <div className="text-sm text-gray-700 space-y-1 mt-3">
+                                    {isIntraState ? (
+                                        <>
+                                            <p>CGST (9%): ₹{cgst.toFixed(2)}</p>
+                                            <p>SGST (9%): ₹{sgst.toFixed(2)}</p>
+                                        </>
+                                    ) : (
+                                        <p>IGST (18%): ₹{igst.toFixed(2)}</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Delivery State: {deliveryAddress.state}
+                                    </p>
+                                </div>
+
+                                <hr className="my-3" />
+
+                                <p className="text-lg font-semibold">
+                                    Total: ₹{grandTotal.toFixed(2)}
+                                </p>
+                            </>
+                        )}
+
                         <button
+                            disabled={!isCheckoutAllowed}
                             onClick={() =>
                                 handleProceedToPayment({
                                     selectedDeliveryId,
-                                    selectedBillingId,
+                                    selectedBillingId: sameAsDelivery
+                                        ? selectedDeliveryId
+                                        : selectedBillingId,
                                     sameAsDelivery,
                                     cart,
-                                    totalPrice,
+                                    subtotal: totalPrice,
+                                    gst: {
+                                        rate: 18,
+                                        type: isIntraState ? "CGST_SGST" : "IGST",
+                                        cgst,
+                                        sgst,
+                                        igst,
+                                    },
+                                    totalAmount: grandTotal,
                                     user,
                                     clearCart,
                                 })
                             }
-                            className="w-full bg-yellow-400 hover:bg-yellow-500 text-white py-1 rounded-2xl text-lg"
+                            className={`w-full mt-4 py-2 rounded-2xl text-lg transition
+      ${isCheckoutAllowed
+                                    ? "bg-yellow-400 hover:bg-yellow-500 text-white"
+                                    : "bg-gray-300 cursor-not-allowed text-gray-600"
+                                }`}
                         >
                             Proceed to Buy
                         </button>
                     </aside>
+
                 </div>
             </main>
 

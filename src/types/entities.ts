@@ -8,34 +8,52 @@ export interface Variant {
 }
 
 export type OrderItem = {
-  id: number;
+  id: string;
   created_at: string;
   product_id: string;
   variant_id: string | null;
+  ordr_id: string;
   quantity: number;
   price: number;
-  ordr_id: string;
-  
   product?: Product | null;
   variant?: Variant | null;
 };
 
 
+
 export type Order = {
   id: string;
   created_at: string;
+
   user_id: string;
+
+  subtotal_amount: number;
+  gst_rate: number;
+  gst_type: "CGST_SGST" | "IGST";
+  cgst_amount: number;
+  sgst_amount: number;
+  igst_amount: number;
   total_amount: number;
+
   payment_type: string | null;
+  razorpay_order_id: string | null;
+
   status: string;
   status_description: string | null;
-  razorpay_order_id: string | null;
+
   shipping_address_id: string | null;
   billing_address_id: string | null;
 
+  /**
+   * Joined relations (API only)
+   */
   shipping_address?: Address | null;
   billing_address?: Address | null;
-  items: OrderItem[];
+
+  /**
+   * API-composed field (NOT a DB column)
+   */
+  items?: OrderItem[];
 };
 
 export interface ProductImage {
@@ -49,11 +67,11 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  productImages: ProductImage[];  
+  productImages: ProductImage[];
   priceType: "fixed" | "variable";
   price: number;
   ProductVariants: Variant[];
-  relatedProducts?: Product[];    
+  relatedProducts?: Product[];
 };
 
 export interface Category {
@@ -69,19 +87,19 @@ export interface Brand {
 }
 
 export interface User {
-  id: string;               
+  id: string;
   name?: string;
   email: string;
   phone?: string | null;
-  dob?: string | null;       
+  dob?: string | null;
   location?: string | null;
   gstin?: string | null;
-  created_at?: string;     
+  created_at?: string;
   email_verified?: boolean;
 }
 
 export interface Cart {
-  id: string; 
+  id: string;
 }
 
 export interface CartItem {

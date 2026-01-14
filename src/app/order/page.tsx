@@ -25,7 +25,6 @@ export default function OrderPage() {
         });
 
         const data = await res.json();
-
         if (data?.order) {
           setOrder(data.order);
           setItems(data.items ?? []);
@@ -66,7 +65,7 @@ export default function OrderPage() {
 
   // Calculate total
   const total = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + item.variant.price * item.quantity,
     0
   );
 
@@ -126,22 +125,45 @@ export default function OrderPage() {
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold">{item.product.name}</h3>
                   <p className="text-gray-600">
-                    ₹{item.product.price} × {item.quantity}
+                    ₹{item.variant.price} × {item.quantity}
                   </p>
                 </div>
 
                 {/* SUBTOTAL */}
                 <p className="text-lg font-semibold">
-                  ₹{item.product.price * item.quantity}
+                  ₹{item.variant.price * item.quantity}
                 </p>
               </div>
             ))}
           </div>
 
           {/* TOTAL */}
-          <div className="border-t pt-4 mb-10">
-            <p className="text-xl font-bold text-right">Total: ₹{total}</p>
+          {/* PRICE SUMMARY */}
+          <div className="border-t pt-4 mb-10 space-y-2 text-right">
+            <p className="text-gray-700">
+              Subtotal: ₹{order.subtotal_amount}
+            </p>
+
+            {order.gst_type === "CGST_SGST" ? (
+              <>
+                <p className="text-gray-700">
+                  CGST (9%): ₹{order.cgst_amount}
+                </p>
+                <p className="text-gray-700">
+                  SGST (9%): ₹{order.sgst_amount}
+                </p>
+              </>
+            ) : (
+              <p className="text-gray-700">
+                IGST (18%): ₹{order.igst_amount}
+              </p>
+            )}
+
+            <p className="text-xl font-bold text-green-700">
+              Total Paid: ₹{order.total_amount}
+            </p>
           </div>
+
 
           {/* ADDRESSES */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
