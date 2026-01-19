@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import type { Address } from "@/types/entities";
+import { INDIAN_STATES } from "@/utils/states";
 
 interface AddAddressModalProps {
     isOpen: boolean;
@@ -44,13 +45,20 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
 
     if (!isOpen) return null;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+        const target = e.target;
+
         setFormData((prev) => ({
             ...prev,
-            [name]: type === "checkbox" ? checked : value,
+            [target.name]:
+                target instanceof HTMLInputElement && target.type === "checkbox"
+                    ? target.checked
+                    : target.value,
         }));
     };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,26 +118,39 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
                             required
                             className="border rounded-lg px-3 py-2 w-full"
                         />
-                        <input
+                        <select
                             name="state"
                             value={formData.state ?? ""}
                             onChange={handleChange}
-                            placeholder="State"
                             required
-                            className="border rounded-lg px-3 py-2 w-full"
-                        />
+                            className="border rounded-lg px-3 py-2 w-full bg-white"
+                        >
+                            <option value="" disabled>
+                                Select State
+                            </option>
+                            {INDIAN_STATES.map((state) => (
+                                <option key={state} value={state}>
+                                    {state}
+                                </option>
+                            ))}
+                        </select>
+
                         <input
                             name="pincode"
                             value={formData.pincode ?? ""}
                             onChange={handleChange}
                             placeholder="Pincode"
+                            inputMode="numeric"
+                            pattern="[0-9]{6}"
+                            maxLength={6}
                             required
                             className="border rounded-lg px-3 py-2 w-full"
                         />
                         <input
                             name="country"
-                            value={formData.country ?? "India"}
+                            value={"India"}
                             onChange={handleChange}
+                            disabled
                             placeholder="Country"
                             className="border rounded-lg px-3 py-2 w-full"
                         />
