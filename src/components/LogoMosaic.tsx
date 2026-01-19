@@ -29,6 +29,12 @@ const commonLogo: Logo = {
   alt: "Sarvottam",
 };
 
+const commonLogo2: Logo = {
+  id: 10,
+  src: "/partners/all.png",
+  alt: "All Stars",
+}
+
 export default function LogoMosaic() {
   const [active, setActive] = useState<0 | 1>(0);
 
@@ -77,7 +83,7 @@ function Slide({ logos, commonSide }: { logos: Logo[]; commonSide: "left" | "rig
           <LogoCard logo={a} />
           <LogoCard logo={b} />
           <div className="row-span-2">
-            <LogoCard logo={commonLogo} />
+            <LogoCard logo={commonLogo2} />
           </div>
 
           <LogoCard logo={c} />
