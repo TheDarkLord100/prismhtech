@@ -35,21 +35,38 @@ export async function GET(request: Request) {
             .from("OrderItems")
             .select(
                 `
-        *,
-        product:products(
-          *,
-          productImages(*)
-        ),
-        variant:ProductVariants(*)
-        `
+            *,
+            product:products(
+            *,
+            productImages(*)
+            ),
+            variant:ProductVariants(*)
+            `
             )
             .in("ordr_id", orderIds);
 
         if (itemsErr) throw itemsErr;
 
+        const { data: history, error: historyErr } = await supabase
+            .from("OrderStatusHistory")
+            .select(`
+            id,
+            order_id,
+            old_status,
+            new_status,
+            changed_at,
+            note
+        `)
+            .in("order_id", orderIds)
+            .order("changed_at", { ascending: true });
+
+        if (historyErr) throw historyErr;
+
+
         const ordersWithItems = orders.map((order) => ({
             ...order,
             items: items.filter((item) => item.ordr_id === order.id),
+            history: history.filter((h) => h.order_id === order.id),
         }));
 
         return NextResponse.json(

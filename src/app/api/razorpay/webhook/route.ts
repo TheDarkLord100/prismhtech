@@ -30,69 +30,118 @@ export async function POST(request: Request) {
   // 2️⃣ Parse event
   const event = JSON.parse(body);
 
-  // We care about successful payments only
-  if (event.event !== "payment.captured") {
-    return NextResponse.json({ success: true });
-  }
-
-  const payment = event.payload.payment.entity;
-  const razorpayOrderId = payment.order_id;
-  const razorpayPaymentId = payment.id;
-  const paymentMethod = payment.method;
-
   const supabase = createAdminSupabaseClient();
 
-  // 3️⃣ Fetch order using razorpay_order_id
-  const { data: order, error: orderError } = await supabase
-    .from("Orders")
-    .select("*")
-    .eq("razorpay_order_id", razorpayOrderId)
-    .single();
+  /* =====================================================
+     🔹 PAYMENT SUCCESS (existing logic – unchanged)
+     ===================================================== */
+  if (event.event === "payment.captured") {
+    const payment = event.payload.payment.entity;
+    const razorpayOrderId = payment.order_id;
+    const razorpayPaymentId = payment.id;
+    const paymentMethod = payment.method;
 
-  if (orderError || !order) {
-    console.error("Order not found for webhook:", razorpayOrderId);
-    return NextResponse.json({ success: false });
-  }
+    const { data: order, error: orderError } = await supabase
+      .from("Orders")
+      .select("*")
+      .eq("razorpay_order_id", razorpayOrderId)
+      .single();
 
-  // 4️⃣ Idempotency: if already paid, stop
-  if (order.status === "PAID") {
+    if (orderError || !order) {
+      console.error("Order not found for webhook:", razorpayOrderId);
+      return NextResponse.json({ success: false });
+    }
+
+    // Idempotency
+    if (order.payment_status === "SUCCESS") {
+      return NextResponse.json({ success: true });
+    }
+
+    const { data: existingPayment } = await supabase
+      .from("payments")
+      .select("id")
+      .eq("payment_id", razorpayPaymentId)
+      .maybeSingle();
+
+    if (!existingPayment) {
+      await supabase.from("payments").insert({
+        order_id: order.id,
+        payment_id: razorpayPaymentId,
+        transaction_id: razorpayPaymentId,
+        amount: payment.amount,
+        currency: payment.currency,
+        method: paymentMethod,
+        status: "SUCCESS",
+      });
+    }
+
+    await supabase
+      .from("Orders")
+      .update({
+        status: "Order Placed",
+        status_description: "Payment captured via Razorpay webhook",
+        payment_status: "SUCCESS",
+      })
+      .eq("id", order.id);
+
+    try {
+      await sendOrderPlacedEmail({ orderId: order.id });
+    } catch (err) {
+      console.error("Webhook email failed:", err);
+    }
+
     return NextResponse.json({ success: true });
   }
 
-  // 5️⃣ Insert payment if not exists
-  const { data: existingPayment } = await supabase
-    .from("payments")
-    .select("id")
-    .eq("payment_id", razorpayPaymentId)
-    .maybeSingle();
+  /* =====================================================
+     🔹 NEW: PAYMENT FAILED (ONLY ADDITION)
+     ===================================================== */
+  if (event.event === "payment.failed") {
+    const payment = event.payload.payment.entity;
+    const razorpayOrderId = payment.order_id;
+    const razorpayPaymentId = payment.id;
 
-  if (!existingPayment) {
-    await supabase.from("payments").insert({
-      order_id: order.id,
-      payment_id: razorpayPaymentId,
-      transaction_id: razorpayPaymentId,
-      amount: payment.amount, // already in paise
-      currency: payment.currency,
-      method: paymentMethod,
-      status: "SUCCESS",
-    });
+    const { data: order } = await supabase
+      .from("Orders")
+      .select("id")
+      .eq("razorpay_order_id", razorpayOrderId)
+      .single();
+
+    if (!order) {
+      return NextResponse.json({ success: true });
+    }
+
+    // Record failed payment (optional but useful)
+    const { data: existingPayment } = await supabase
+      .from("payments")
+      .select("id")
+      .eq("payment_id", razorpayPaymentId)
+      .maybeSingle();
+
+    if (!existingPayment) {
+      await supabase.from("payments").insert({
+        order_id: order.id,
+        payment_id: razorpayPaymentId,
+        transaction_id: razorpayPaymentId,
+        amount: payment.amount,
+        currency: payment.currency,
+        method: payment.method,
+        status: "FAILED",
+      });
+    }
+
+    // Update order payment status ONLY
+    await supabase
+      .from("Orders")
+      .update({
+        payment_status: "FAILED",
+        status_description: "Payment failed via Razorpay",
+      })
+      .eq("id", order.id);
+
+    return NextResponse.json({ success: true });
   }
 
-  // 6️⃣ Mark order as PAID
-  await supabase
-    .from("Orders")
-    .update({
-      status: "Order Placed",
-      status_description: "Payment captured via Razorpay webhook",
-    })
-    .eq("id", order.id);
-
-  // 7️⃣ Send confirmation email (non-blocking)
-  try {
-    await sendOrderPlacedEmail({ orderId: order.id });
-  } catch (err) {
-    console.error("Webhook email failed:", err);
-  }
-
+  // Ignore all other events
   return NextResponse.json({ success: true });
 }

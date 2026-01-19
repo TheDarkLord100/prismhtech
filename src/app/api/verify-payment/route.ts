@@ -94,6 +94,7 @@ export async function POST(request: Request) {
             .update({
                 status: "Order Placed",
                 status_description: "Payment successful, order placed",
+                payment_status: "SUCCESS",
             })
             .eq("id", orderData.id);
 

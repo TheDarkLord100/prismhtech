@@ -35,6 +35,7 @@ export type Order = {
   igst_amount: number;
   total_amount: number;
 
+  payment_status: string;
   payment_type: string | null;
   razorpay_order_id: string | null;
 
@@ -44,17 +45,27 @@ export type Order = {
   shipping_address_id: string | null;
   billing_address_id: string | null;
 
-  /**
-   * Joined relations (API only)
-   */
   shipping_address?: Address | null;
   billing_address?: Address | null;
 
-  /**
-   * API-composed field (NOT a DB column)
-   */
   items?: OrderItem[];
+
+  history?: OrderStatusHistory[];
 };
+
+export type OrderStatusHistory = {
+  id: string;
+  order_id: string;
+
+  old_status: string | null;
+  new_status: string;
+
+  changed_at: string;
+  changed_by: string | null;
+
+  note: string | null;
+};
+
 
 export interface ProductImage {
   id: string;

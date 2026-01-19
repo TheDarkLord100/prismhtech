@@ -6,12 +6,29 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Order } from "@/types/entities";
 
+const STATUS_ORDER = [
+  "Order placed",
+  "Order accepted",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
+
+function PaymentBadge({ status }: { status?: string }) {
+  if (status === "SUCCESS") {
+    return <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Paid</span>;
+  }
+  if (status === "FAILED") {
+    return <span className="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Payment Failed</span>;
+  }
+  return <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending Payment</span>;
+}
+
 export default function OrderPage() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
 
-  const [order, setOrder] = useState<Order>();
-  const [items, setItems] = useState<any[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,17 +37,11 @@ export default function OrderPage() {
     const fetchOrder = async () => {
       try {
         const res = await fetch(`/api/order/${orderId}`, {
-          method: "GET",
           credentials: "include",
         });
-
         const data = await res.json();
-        if (data?.order) {
-          setOrder(data.order);
-          setItems(data.items ?? []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch order:", err);
+        console.log("Order data:", data);
+        if (data?.order) setOrder(data.order);
       } finally {
         setLoading(false);
       }
@@ -55,18 +66,16 @@ export default function OrderPage() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-red-600 text-xl">Order not found.</p>
+        <div className="min-h-screen flex items-center justify-center text-red-600">
+          Order not found
         </div>
         <Footer />
       </>
     );
   }
 
-  // Calculate total
-  const total = items.reduce(
-    (sum, item) => sum + item.variant.price * item.quantity,
-    0
+  const historyMap = new Map(
+    order.history?.map(h => [h.new_status, h.changed_at])
   );
 
   return (
@@ -76,121 +85,97 @@ export default function OrderPage() {
       <main className="min-h-screen bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50] py-16 px-4 flex justify-center">
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow p-8">
 
-          {/* ORDER HEADER */}
-          <h1 className="text-3xl font-bold mb-6 text-green-700">Order Summary</h1>
-          {/* ORDER STATUS */}
-          <div className="mb-6">
-            <div className="inline-block px-4 py-1 rounded-full text-sm font-semibold
-    bg-green-100 text-green-700 border border-green-300">
-              {order.status}
-            </div>
-
-            {order.status_description && (
-              <p className="text-gray-700 mt-2">
-                {order.status_description}
-              </p>
-            )}
+          {/* HEADER */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-green-700">Order Summary</h1>
+            <PaymentBadge status={order.payment_status} />
           </div>
 
-          <p className="text-gray-700 mb-2">
-            <strong>Order ID:</strong> {order.id}
-          </p>
+          <p className="text-gray-700 mb-1"><strong>Order ID:</strong> {order.id}</p>
           <p className="text-gray-700 mb-6">
-            <strong>Order Date:</strong>{" "}
-            {new Date(order.created_at).toLocaleDateString("en-US", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}
+            <strong>Placed on:</strong>{" "}
+            {new Date(order.created_at).toLocaleDateString("en-IN")}
           </p>
 
-          {/* ORDER ITEMS */}
+          {/* STATUS TIMELINE */}
+          <div className="space-y-3 mb-8">
+            {STATUS_ORDER.map((status) => {
+              let isActive = false;
+              let date: string | undefined;
+
+              // ✅ Order placed is ALWAYS active
+              if (status === "Order placed") {
+                isActive = true;
+                date = order.created_at;
+              } else {
+                date = historyMap.get(status);
+                isActive = Boolean(date);
+              }
+
+              return (
+                <div key={status} className="flex items-center gap-3">
+                  {/* Dot */}
+                  <div
+                    className={`w-3 h-3 rounded-full ${isActive ? "bg-green-600" : "bg-gray-300"
+                      }`}
+                  />
+
+                  {/* Label */}
+                  <span className={isActive ? "font-medium text-black" : "text-gray-500"}>
+                    {status}
+                  </span>
+
+                  {/* Date */}
+                  {date && (
+                    <span className="text-sm text-gray-500">
+                      ({new Date(date).toLocaleDateString("en-IN")})
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ITEMS */}
           <h2 className="text-2xl font-semibold mb-4">Items</h2>
-          <div className="flex flex-col gap-6 mb-8">
-            {items.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-4 border rounded-xl p-4"
-              >
-                {/* IMAGE */}
+          <div className="space-y-4 mb-8">
+            {order.items?.map(item => (
+              <div key={item.id} className="flex items-center gap-4 border rounded-xl p-4">
                 <img
-                  src={
-                    item.product.productImages?.[0]?.image_url ??
-                    "/placeholder.png"
-                  }
-                  className="w-20 h-20 object-cover rounded-lg"
+                  src={item.product?.productImages?.[0]?.image_url ?? "/placeholder.png"}
+                  className="w-20 h-20 rounded object-cover"
                 />
 
-                {/* DETAILS */}
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{item.product.name}</h3>
+                  <h3 className="font-semibold">{item.product?.name}</h3>
                   <p className="text-gray-600">
-                    ₹{item.variant.price} × {item.quantity}
+                    ₹{item.price} × {item.quantity}
                   </p>
                 </div>
 
-                {/* SUBTOTAL */}
-                <p className="text-lg font-semibold">
-                  ₹{item.variant.price * item.quantity}
+                <p className="font-semibold">
+                  ₹{item.price * item.quantity}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* TOTAL */}
           {/* PRICE SUMMARY */}
-          <div className="border-t pt-4 mb-10 space-y-2 text-right">
-            <p className="text-gray-700">
-              Subtotal: ₹{order.subtotal_amount}
-            </p>
+          <div className="border-t pt-4 space-y-2 text-right">
+            <p>Subtotal: ₹{order.subtotal_amount}</p>
 
             {order.gst_type === "CGST_SGST" ? (
               <>
-                <p className="text-gray-700">
-                  CGST (9%): ₹{order.cgst_amount}
-                </p>
-                <p className="text-gray-700">
-                  SGST (9%): ₹{order.sgst_amount}
-                </p>
+                <p>CGST (9%): ₹{order.cgst_amount}</p>
+                <p>SGST (9%): ₹{order.sgst_amount}</p>
               </>
             ) : (
-              <p className="text-gray-700">
-                IGST (18%): ₹{order.igst_amount}
-              </p>
+              <p>IGST (18%): ₹{order.igst_amount}</p>
             )}
 
             <p className="text-xl font-bold text-green-700">
-              Total Paid: ₹{order.total_amount}
+              Total: ₹{order.total_amount}
             </p>
-          </div>
-
-
-          {/* ADDRESSES */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {/* BILLING ADDRESS */}
-            <div className="border rounded-xl p-5">
-              <h3 className="text-xl font-semibold mb-3">Billing Address</h3>
-              <p>{order.billing_address?.name}</p>
-              <p>{order.billing_address?.address_l1}, {order.billing_address?.address_l2}</p>
-              <p>
-                {order.billing_address?.city}, {order.billing_address?.state} -{" "}
-                {order.billing_address?.pincode}
-              </p>
-              <p>Phone: {order.billing_address?.phone}</p>
-            </div>
-
-            {/* SHIPPING ADDRESS */}
-            <div className="border rounded-xl p-5">
-              <h3 className="text-xl font-semibold mb-3">Shipping Address</h3>
-              <p>{order.shipping_address?.name}</p>
-              <p>{order.shipping_address?.address_l1}, {order.shipping_address?.address_l2}</p>
-              <p>
-                {order.shipping_address?.city}, {order.shipping_address?.state} -{" "}
-                {order.shipping_address?.pincode}
-              </p>
-              <p>Phone: {order.shipping_address?.phone}</p>
-            </div>
           </div>
 
         </div>

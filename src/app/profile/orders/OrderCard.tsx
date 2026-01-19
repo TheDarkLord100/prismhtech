@@ -5,6 +5,41 @@ import type { Order } from "@/types/entities";
 import type { OrderItem } from "@/types/entities";
 import { useRouter } from "next/navigation";
 
+const STATUS_INDEX: Record<string, number> = {
+    "Order placed": 0,
+    "Order accepted": 1,
+    "Shipped": 2,
+    "Delivered": 3,
+};
+
+function isStepComplete(order: Order, status: string) {
+    // Order placed is always complete
+    if (status === "Order placed") return true;
+
+    // Any other step is complete ONLY if it exists in history
+    return Boolean(
+        order.history?.some((h) => h.new_status === status)
+    );
+}
+
+
+
+function getStatusDate(
+    order: Order,
+    status: string
+): string | null {
+    if (status === "Order placed") {
+        return order.created_at;
+    }
+
+    const entry = order.history?.find(
+        (h) => h.new_status === status
+    );
+
+    return entry?.changed_at ?? null;
+}
+
+
 const OrderHeader = ({ order }: { order: Order }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     const tooltipRef = useRef<HTMLDivElement>(null);
@@ -29,7 +64,8 @@ const OrderHeader = ({ order }: { order: Order }) => {
         ">
             {/* ORDER PLACED */}
             <div className="flex flex-col">
-                <span className="text-gray-500 text-xs tracking-wider">ORDER PLACED</span>
+                <span className="text-gray-500 text-xs tracking-wider">STATUS</span>
+                <span className="font-medium text-gray-900">{order.status}</span>
                 <span className="font-medium text-gray-900">
                     {new Date(order.created_at).toLocaleDateString("en-IN")}
                 </span>
@@ -74,12 +110,24 @@ const OrderHeader = ({ order }: { order: Order }) => {
                     ORDER #{order.id}
                 </span>
 
-                <a
-                    href=""
-                    className="text-green-700 hover:underline mt-1 text-sm"
-                >
-                    Download Invoice
-                </a>
+                {order.payment_status === "PENDING" && (
+                    <span className="text-yellow-600 font-medium">
+                        Payment pending
+                    </span>
+                )}
+
+                {order.payment_status === "FAILED" && (
+                    <span className="text-red-600 font-medium">
+                        Payment failed
+                    </span>
+                )}
+
+                {order.payment_status === "SUCCESS" && (
+                    <span className="text-green-700 font-medium">
+                        Paid
+                    </span>
+                )}
+
             </div>
         </div>
     );
@@ -89,7 +137,7 @@ const OrderHeader = ({ order }: { order: Order }) => {
 export default function OrderCard({ order }: { order: Order }) {
     const item = order.items?.[0];
     const router = useRouter();
-
+    console.log("Rendering OrderCard for order:", order);
     return (
         <div className="border border-gray-200 shadow-sm rounded-3xl overflow-hidden bg-white mb-8">
             <div className="bg-gray-200 px-6 py-5">
@@ -113,47 +161,90 @@ export default function OrderCard({ order }: { order: Order }) {
                         />
                     </div>
 
-                    {/* PROGRESS — full width on mobile, middle on desktop */}
+                    {/* ORDER PROGRESS */}
                     <div className="flex flex-col flex-1 w-full lg:w-auto mt-4 lg:mt-0">
 
-                        {/* STEP 1 */}
-                        <div className="flex items-start">
-                            <div className="flex flex-col items-center mr-3">
-                                <svg className="w-6 h-6 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <div className="w-px flex-1 bg-green-700"></div>
-                            </div>
-                            <div className="pb-6">
-                                <p className="font-medium text-gray-800">Ordered Thursday, 5 June</p>
-                            </div>
-                        </div>
+                        {[
+                            { label: "Ordered", status: "Order placed" },
+                            { label: "Order accepted", status: "Order accepted" },
+                            { label: "Shipped", status: "Shipped" },
+                            { label: "Delivered", status: "Delivered" },
+                        ].map((step, idx) => {
+                            const completed = isStepComplete(order, step.status);
+                            const isLast = idx === 3;
+                            const date = getStatusDate(order, step.status);
 
-                        {/* STEP 2 */}
-                        <div className="flex items-start">
-                            <div className="flex flex-col items-center mr-3">
-                                <svg className="w-6 h-6 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <div className="w-px flex-1 bg-gray-300"></div>
-                            </div>
-                            <div className="pb-6">
-                                <p className="font-medium text-gray-800">Shipped Monday, 9 June</p>
-                            </div>
-                        </div>
+                            return (
+                                <div key={step.status} className="flex items-start">
+                                    {/* ICON + LINE */}
+                                    <div className="flex flex-col items-center mr-3">
+                                        {completed ? (
+                                            <svg
+                                                className="w-6 h-6 text-green-700"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2.5"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                />
+                                            </svg>
+                                        ) : (
+                                            <div className="w-6 h-6 border-2 border-gray-400 rounded-full bg-white" />
+                                        )}
 
-                        {/* STEP 3 */}
-                        <div className="flex items-start">
-                            <div className="flex flex-col items-center mr-3">
-                                <div className="w-6 h-6 border-2 border-gray-400 rounded-full bg-white"></div>
+                                        {!isLast && (
+                                            <div
+                                                className={`w-px flex-1 ${completed ? "bg-green-700" : "bg-gray-300"
+                                                    }`}
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* LABEL + DATE */}
+                                    <div className="pb-6">
+                                        <p
+                                            className={`font-medium ${completed ? "text-gray-900" : "text-gray-500"
+                                                }`}
+                                        >
+                                            {step.label}
+                                        </p>
+
+                                        {date && (
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                {new Date(date).toLocaleDateString("en-IN", {
+                                                    weekday: "short",
+                                                    day: "numeric",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                })}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {/* CANCELLED STATE */}
+                        {order.status === "Cancelled" && (
+                            <div className="mt-4">
+                                <p className="font-semibold text-red-600">
+                                    Order Cancelled on{" "}
+                                    {(() => {
+                                        const cancelledDate = getStatusDate(order, "Cancelled");
+                                        return cancelledDate
+                                            ? new Date(cancelledDate).toLocaleDateString("en-IN")
+                                            : "";
+                                    })()}
+                                </p>
                             </div>
-                            <div>
-                                <p className="font-medium text-gray-800">Arriving today</p>
-                            </div>
-                        </div>
+                        )}
                     </div>
+
+
 
                     {/* RIGHT BUTTONS — stacked vertically, moved under progress in mobile */}
                     <div className="flex flex-col space-y-2 w-full lg:w-auto lg:items-end mt-6 lg:mt-0">

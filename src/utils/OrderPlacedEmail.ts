@@ -3,10 +3,6 @@ import { createAdminSupabaseClient } from "@/utils/supabase/adminClient";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-/* =======================
-   Explicit Result Type
-   ======================= */
-
 type OrderQueryResult = {
   id: string;
   created_at: string;
