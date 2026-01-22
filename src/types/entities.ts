@@ -143,3 +143,10 @@ export interface Address {
   country?: string | null;
   default?: boolean | null;
 }
+export interface Metal {
+  id: string;
+  name: string;
+  live_price: number;
+  lot_size: number;
+  minimum_quantity: number;
+}

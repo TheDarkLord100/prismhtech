@@ -124,20 +124,6 @@ export async function sendOrderPlacedEmail({
     .join("");
 
   /* =======================
-     4️⃣ GST HTML
-     ======================= */
-
-  const gstHtml =
-    order.gst_type === "CGST_SGST"
-      ? `
-        <p>CGST (9%): ₹${order.cgst_amount}</p>
-        <p>SGST (9%): ₹${order.sgst_amount}</p>
-      `
-      : `
-        <p>IGST (18%): ₹${order.igst_amount}</p>
-      `;
-
-  /* =======================
      5️⃣ Email HTML
      ======================= */
 
@@ -173,93 +159,111 @@ export async function sendOrderPlacedEmail({
 
             <!-- Content -->
             <tr>
-              <td style="padding:30px;">
+            <td
+              style="
+                background-color:#fff8e1;
+                color:#8a6d3b;
+                padding:12px 20px;
+                text-align:center;
+                font-size:13px;
+                font-weight:bold;
+                border-bottom:1px solid #f0e0b5;
+              "
+            >
+              ⚠️ THIS IS A PROVISIONAL ORDER CONFIRMATION — NOT A LEGAL TAX INVOICE
+            </td>
+          </tr>
+            <tr>
+              <td style="padding:30px; position:relative;">
+                <!-- REAL CONTENT -->
+                <div style="position:relative; z-index:1;">
 
-                <p style="color:#333; font-size:15px; line-height:1.6;">
-                  Hi <strong>${order.user.name ?? "Customer"}</strong>,
-                </p>
+                  <p style="color:#333; font-size:15px; line-height:1.6;">
+                    Hi <strong>${order.user.name ?? "Customer"}</strong>,
+                  </p>
 
-                <p style="color:#555; font-size:15px; line-height:1.6;">
-                  Thank you for your order! Your order
-                  <strong>#${order.id}</strong> has been successfully placed.
-                </p>
+                  <p style="color:#555; font-size:15px; line-height:1.6;">
+                    Thank you for your order! Your order
+                    <strong>#${order.id}</strong> has been successfully placed.
+                  </p>
 
-                <!-- Items -->
-                <table width="100%" cellpadding="8" cellspacing="0"
-                  style="border-collapse:collapse; margin-top:20px; font-size:14px;">
-                  <tr style="background-color:#eaf5ef;">
-                    <th align="left">Item</th>
-                    <th align="center">Qty</th>
-                    <th align="right">Price</th>
-                  </tr>
-                  ${itemsHtml}
-                </table>
+                  <!-- Items -->
+                  <table width="100%" cellpadding="8" cellspacing="0"
+                    style="border-collapse:collapse; margin-top:20px; font-size:14px;">
+                    <tr style="background-color:#eaf5ef;">
+                      <th align="left">Item</th>
+                      <th align="center">Qty</th>
+                      <th align="right">Price</th>
+                    </tr>
+                    ${itemsHtml}
+                  </table>
 
-                <!-- Summary -->
-                <table width="100%" cellpadding="6" cellspacing="0"
-                  style="margin-top:20px; font-size:14px;">
-                  <tr>
-                    <td align="left">Subtotal</td>
-                    <td align="right">₹${order.subtotal_amount}</td>
-                  </tr>
+                  <!-- Summary -->
+                  <table width="100%" cellpadding="6" cellspacing="0"
+                    style="margin-top:20px; font-size:14px;">
+                    <tr>
+                      <td align="left">Subtotal</td>
+                      <td align="right">₹${order.subtotal_amount}</td>
+                    </tr>
 
-                  ${order.gst_type === "CGST_SGST"
+                    ${order.gst_type === "CGST_SGST"
       ? `
-                        <tr>
-                          <td align="left">CGST (9%)</td>
-                          <td align="right">₹${order.cgst_amount}</td>
-                        </tr>
-                        <tr>
-                          <td align="left">SGST (9%)</td>
-                          <td align="right">₹${order.sgst_amount}</td>
-                        </tr>
-                      `
+                          <tr>
+                            <td align="left">CGST (9%)</td>
+                            <td align="right">₹${order.cgst_amount}</td>
+                          </tr>
+                          <tr>
+                            <td align="left">SGST (9%)</td>
+                            <td align="right">₹${order.sgst_amount}</td>
+                          </tr>
+                        `
       : `
-                        <tr>
-                          <td align="left">IGST (18%)</td>
-                          <td align="right">₹${order.igst_amount}</td>
-                        </tr>
-                      `
+                          <tr>
+                            <td align="left">IGST (18%)</td>
+                            <td align="right">₹${order.igst_amount}</td>
+                          </tr>
+                        `
     }
 
-                  <tr style="font-weight:bold; border-top:1px solid #ddd;">
-                    <td align="left">Total Paid</td>
-                    <td align="right">₹${order.total_amount}</td>
-                  </tr>
-                </table>
+                    <tr style="font-weight:bold; border-top:1px solid #ddd;">
+                      <td align="left">Total Paid</td>
+                      <td align="right">₹${order.total_amount}</td>
+                    </tr>
+                  </table>
 
-                <!-- CTA -->
-                <div style="text-align:center; margin:30px 0;">
-                  <a href="${orderUrl}"
-                    style="
-                      display:inline-block;
-                      padding:14px 28px;
-                      background-color:#4CAF50;
-                      color:#ffffff;
-                      text-decoration:none;
-                      border-radius:6px;
-                      font-weight:bold;
-                      font-size:16px;
-                    ">
-                    View Order Details
-                  </a>
+                  <!-- CTA -->
+                  <div style="text-align:center; margin:30px 0;">
+                    <a href="${orderUrl}"
+                      style="
+                        display:inline-block;
+                        padding:14px 28px;
+                        background-color:#4CAF50;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:6px;
+                        font-weight:bold;
+                        font-size:16px;
+                      ">
+                      View Order Details
+                    </a>
+                  </div>
+
+                  <p style="color:#777; font-size:13px; line-height:1.6;">
+                    If the button does not work, copy and paste this link into your browser:
+                  </p>
+
+                  <p style="word-break:break-all; font-size:13px; color:#4CAF50;">
+                    ${orderUrl}
+                  </p>
+
+                  <hr style="border:none; border-top:1px solid #e0e0e0; margin:30px 0;" />
+
+                  <p style="color:#999; font-size:12px;">
+                    This is a provisional order confirmation.  
+                    A tax invoice will be issued separately once the order is processed.
+                  </p>
+
                 </div>
-
-                <p style="color:#777; font-size:13px; line-height:1.6;">
-                  If the button does not work, copy and paste this link into your browser:
-                </p>
-
-                <p style="word-break:break-all; font-size:13px; color:#4CAF50;">
-                  ${orderUrl}
-                </p>
-
-                <hr style="border:none; border-top:1px solid #e0e0e0; margin:30px 0;" />
-
-                <p style="color:#999; font-size:12px;">
-                  This is a provisional order confirmation.  
-                  A tax invoice will be issued separately once the order is processed.
-                </p>
-
               </td>
             </tr>
 
@@ -280,6 +284,7 @@ export async function sendOrderPlacedEmail({
   </body>
 </html>
 `;
+
 
 
   /* =======================
