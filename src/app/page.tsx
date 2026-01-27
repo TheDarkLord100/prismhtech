@@ -70,6 +70,7 @@ export default function HomePage() {
       {liveMetals.length > 0 && (
         <MarketRatesWidget metals={liveMetals} />
       )}
+      <MemorialSection />
       <Footer />
     </main>
   );

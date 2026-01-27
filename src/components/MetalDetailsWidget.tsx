@@ -30,9 +30,9 @@ export default function MetalDetailsWidget({ metal, onClose }: Props) {
 
     return (
         <div className="fixed inset-0 z-[10000] bg-black/40 flex items-end sm:items-center justify-center">
-            <div 
-            ref={panelRef}
-            className="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl p-4 shadow-xl">
+            <div
+                ref={panelRef}
+                className="bg-white w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl p-4 shadow-xl">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                     <div>
@@ -52,6 +52,25 @@ export default function MetalDetailsWidget({ metal, onClose }: Props) {
 
                 {/* Chart */}
                 <MetalHistoryChart metalId={metal.id} />
+
+                {/* Lot size & minimum quantity */}
+                <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 space-y-1">
+                    <div>
+                        <span className="font-medium">Lot size:</span>{" "}
+                        {metal.lot_size} Kg
+                    </div>
+                    <div>
+                        <span className="font-medium">Minimum quantity:</span>{" "}
+                        {metal.minimum_quantity} Kg
+                    </div>
+                </div>
+
+                {/* Weight variation note */}
+                <p className="mt-2 text-xs text-gray-500 leading-relaxed">
+                    Note: There may be a slight variation in the total weight of the order.
+                    Any difference in price will be communicated when the order is ready
+                    for dispatch.
+                </p>
 
                 {/* Buy */}
                 <button

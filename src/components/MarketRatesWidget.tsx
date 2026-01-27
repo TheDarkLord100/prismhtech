@@ -34,17 +34,17 @@ export default function MarketRatesWidget({ metals }: Props) {
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-6 right-6 z-[9999] font-['Gotham']"
+      className="fixed top-20 right-6 z-[9999] font-['Gotham']"
     >
       {/* CLOSED STATE */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="bg-[#FFC107] text-white px-5 py-4 rounded-xl shadow-lg
-          flex items-center gap-2 hover:bg-[#1a5e48] transition"
+          className="bg-[#1a5e48] text-white px-5 py-4 rounded-xl shadow-lg
+          flex items-center gap-2 hover:bg-[#FFC107] transition"
         >
           <ChevronLeft size={18} />
-          <span className="text-sm font-medium">Exchange Rates</span>
+          <span className="text-xl font-medium">Exchange Rates</span>
         </button>
       )}
 

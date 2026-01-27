@@ -10,6 +10,10 @@ import { validateDOB, validateName, validatePhone, validateGSTIN, validateLocati
 export default function OnboardingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [gstVerifying, setGstVerifying] = useState(false);
+  const [gstVerified, setGstVerified] = useState(false);
+  const [verifiedGSTIN, setVerifiedGSTIN] = useState<string | null>(null);
+  const [legalName, setLegalName] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -19,8 +23,55 @@ export default function OnboardingPage() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "gstin") {
+      setGstVerified(false);
+      setVerifiedGSTIN(null);
+      setLegalName(null);
+    }
   };
+
+  const handleVerifyGST = async () => {
+    if (validateGSTIN(form.gstin)) {
+      notify(Notification.FAILURE, validateGSTIN(form.gstin)!);
+      return;
+    }
+
+    try {
+      setGstVerifying(true);
+
+      const res = await fetch(
+        `/api/razorpay/verify-gst?gstin=${form.gstin}`
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        notify(Notification.FAILURE, data.error_description);
+        return;
+      }
+
+      if (data.status !== "Active") {
+        notify(Notification.FAILURE, "GST is not active");
+        return;
+      }
+
+      setGstVerified(true);
+      setVerifiedGSTIN(form.gstin);
+      setLegalName(data.legal_name);
+
+      notify(Notification.SUCCESS, "GST verified successfully");
+
+    } catch {
+      notify(Notification.FAILURE, "Failed to verify GST");
+    } finally {
+      setGstVerifying(false);
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +109,13 @@ export default function OnboardingPage() {
       setLoading(false);
       return;
     }
+
+    if (!gstVerified || verifiedGSTIN !== form.gstin) {
+      notify(Notification.FAILURE, "Please verify your GST number before submitting");
+      setLoading(false);
+      return;
+    }
+
 
     const res = await fetch("/api/complete-profile", {
       method: "POST",
@@ -122,22 +180,51 @@ export default function OnboardingPage() {
               required
             />
 
-            <input
-              name="gstin"
-              value={form.gstin}
-              onChange={handleChange}
-              placeholder="GST Identification Number"
-              className="mb-6 w-full rounded-lg bg-[#e0e0db] px-4 py-2"
-              required
-            />
+            <div className="mb-6">
+              <div className="flex gap-2">
+                <input
+                  name="gstin"
+                  value={form.gstin}
+                  onChange={handleChange}
+                  placeholder="GST Identification Number"
+                  className="flex-1 rounded-lg bg-[#e0e0db] px-4 py-2"
+                  required
+                />
+
+                <button
+                  type="button"
+                  onClick={handleVerifyGST}
+                  disabled={gstVerifying || !form.gstin}
+                  className={`px-4 py-2 rounded-lg font-semibold text-white
+        ${gstVerified ? "bg-green-600" : "bg-[#16463B] hover:bg-[#1f5e4f]"}
+      `}
+                >
+                  {gstVerifying
+                    ? "Verifying..."
+                    : gstVerified
+                      ? "Verified"
+                      : "Verify"}
+                </button>
+              </div>
+
+              {gstVerified && legalName && (
+                <p className="mt-2 text-sm text-green-700 font-medium">
+                  ✔ {legalName}
+                </p>
+              )}
+            </div>
+
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-[#4CAF50] py-3 font-semibold text-white hover:bg-[#9333EA]"
+              disabled={loading || !gstVerified || verifiedGSTIN !== form.gstin}
+              className="w-full rounded-lg bg-[#4CAF50] py-3 font-semibold text-white
+              disabled:opacity-50 disabled:cursor-not-allowed
+              hover:bg-[#9333EA]"
             >
               {loading ? "Processing..." : "Finish Setup"}
             </button>
+
           </form>
         </div>
       </main>

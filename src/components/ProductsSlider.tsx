@@ -139,7 +139,7 @@ export default function ProductsSlider({
             <Swiper
               modules={[Navigation, Autoplay]}
               spaceBetween={24}
-              slidesPerView={1}
+              slidesPerView="auto"
               navigation={{
                 nextEl: ".companies-swiper-button-next",
                 prevEl: ".companies-swiper-button-prev",
@@ -147,14 +147,10 @@ export default function ProductsSlider({
               loop
               speed={3000}
               autoplay={{ delay: 0, disableOnInteraction: false }}
-              breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-              }}
               className="w-full"
             >
               {brands.map((brand) => (
-                <SwiperSlide key={brand.id}>
+                <SwiperSlide key={brand.id} className="!w-auto">
                   <Link
                     href={`/products?brandId=${brand.id}&brandName=${encodeURIComponent(
                       brand.name
@@ -162,14 +158,17 @@ export default function ProductsSlider({
                   >
                     <div className="flex justify-center items-center cursor-pointer hover:opacity-90 transition">
                       {brand.logo_url ? (
-                        <Image
-                          src={brand.logo_url}
-                          alt={brand.name}
-                          width={500}
-                          height={100}
-                          className="object-contain h-60"
-                          unoptimized
-                        />
+                        <div className="relative h-60 min-w-[200px] px-8 flex items-center justify-center">
+                          <Image
+                            src={brand.logo_url}
+                            alt={brand.name}
+                            height={240}
+                            width={600}
+                            className="h-full w-auto object-contain"
+                            unoptimized
+                          />
+                        </div>
+
                       ) : (
                         <p className="text-gray-400">No Logo</p>
                       )}

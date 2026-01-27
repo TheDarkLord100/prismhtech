@@ -128,77 +128,80 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* 🔹 Heading + Sort aligned horizontally */}
-        <div className="flex justify-between items-center mb-10 w-full max-w-7xl mx-auto px-2 sm:px-4">
-          <h1 className="text-2xl font-semibold text-white relative inline-block">
-            {categoryName
-              ? `Products in ${categoryName}`
-              : brandName
-              ? `Products by ${brandName}`
-              : "All Products"}
-            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-400 rounded-full mt-1" />
-          </h1>
 
-          {/* Sort Button */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setShowSortMenu((prev) => !prev)}
-              className={`flex items-center gap-2 text-white px-3 py-1 rounded-md transition 
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+
+          <div className="flex justify-between items-center mb-10">
+            <h1 className="text-2xl font-semibold text-white relative inline-block">
+              {categoryName
+                ? `Products in ${categoryName}`
+                : brandName
+                  ? `Products by ${brandName}`
+                  : "All Products"}
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-400 rounded-full mt-1" />
+            </h1>
+
+            {/* Sort Button */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowSortMenu((prev) => !prev)}
+                className={`flex items-center gap-2 text-white px-3 py-1 rounded-md transition 
                 ${sortType ? "border-2 border-yellow-400" : ""}`}
-            >
-              <span className="text-gray-200">Sort</span>
-            </button>
+              >
+                <span className="text-gray-200">Sort</span>
+              </button>
 
-            {showSortMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-gray-200 rounded-lg shadow-lg z-50">
-                <p className="px-4 py-2 text-sm text-gray-400 border-b border-gray-600">
-                  Sort by
-                </p>
-                <button
-                  onClick={() => setSortType("high-to-low")}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                >
-                  Price - high to low
-                </button>
-                <button
-                  onClick={() => setSortType("low-to-high")}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-700"
-                >
-                  Price - low to high
-                </button>
+              {showSortMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-gray-200 rounded-lg shadow-lg z-50">
+                  <p className="px-4 py-2 text-sm text-gray-400 border-b border-gray-600">
+                    Sort by
+                  </p>
+                  <button
+                    onClick={() => setSortType("high-to-low")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                  >
+                    Price - high to low
+                  </button>
+                  <button
+                    onClick={() => setSortType("low-to-high")}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+                  >
+                    Price - low to high
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 🛍️ Product Grid */}
+          <div className="mb-10">
+            {visibleProducts.length === 0 ? (
+              <p className="text-white text-lg">No products found.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {visibleProducts.map((p) => (
+                  <div key={p.id} className="">
+                    <ProductCard
+                      product={p}
+                      onClick={() => {
+                        if (categoryName) {
+                          router.push(
+                            `/product-details/${p.id}?category=${categoryName}`
+                          );
+                        } else if (brandName) {
+                          router.push(
+                            `/product-details/${p.id}?brand=${brandName}`
+                          );
+                        } else {
+                          router.push(`/product-details/${p.id}`);
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
-
-        {/* 🛍️ Product Grid */}
-        <div className="flex justify-center mb-10">
-          {visibleProducts.length === 0 ? (
-            <p className="text-white text-lg">No products found.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-0 max-w-7xl w-full px-2 sm:px-4">
-              {visibleProducts.map((p) => (
-                <div key={p.id} className="flex justify-center">
-                  <ProductCard
-                  product={p}
-                    onClick={() => {
-                      if (categoryName) {
-                        router.push(
-                          `/product-details/${p.id}?category=${categoryName}`
-                        );
-                      } else if(brandName) {
-                        router.push(
-                          `/product-details/${p.id}?brand=${brandName}`
-                        );
-                      } else {
-                        router.push(`/product-details/${p.id}`);
-                      }
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <Footer />
