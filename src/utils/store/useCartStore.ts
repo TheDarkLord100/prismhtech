@@ -5,11 +5,13 @@ import { persist } from "zustand/middleware";
 import type {
   Cart,
   CartItem,
-  Product,
-  Variant,
   CartItemDetails,
   CartWithItems
 } from "@/types/entities";
+import type{
+  Product, 
+  Variant
+} from "@/types/product"
 import { useUserStore } from "./userStore";
 
 interface CartStore {
@@ -239,7 +241,7 @@ export const useCartStore = create<CartStore>()(
         const cart = get().cart;
         if (!cart || !cart.items) return 0;
         return cart.items.reduce((sum, item) => {
-          const price = item.variant?.price ?? item.product?.price ?? 0;
+          const price = item.variant?.price ?? 0;
           return sum + price * item.quantity;
         }, 0);
       },
