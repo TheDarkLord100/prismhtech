@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import type { Product } from "@/types/entities";
+import type { Product } from "@/types/product";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -60,6 +60,10 @@ export default function ProductsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const getDisplayPrice = (product: Product): number => {
+    return product.ProductVariants?.[0]?.price ?? Infinity;
+  };
+
   /** 🔹 Filter + Sort */
   const visibleProducts = useMemo(() => {
     let result = [...products];
@@ -73,10 +77,15 @@ export default function ProductsPage() {
       );
     }
 
+
     if (sortType === "high-to-low") {
-      result.sort((a, b) => b.price - a.price);
+      result.sort(
+        (a, b) => getDisplayPrice(b) - getDisplayPrice(a)
+      );
     } else if (sortType === "low-to-high") {
-      result.sort((a, b) => a.price - b.price);
+      result.sort(
+        (a, b) => getDisplayPrice(a) - getDisplayPrice(b)
+      );
     }
 
     return result;

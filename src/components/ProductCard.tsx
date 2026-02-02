@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/utils/store/useCartStore";
-import type { Product } from "@/types/entities";
+import type { Product } from "@/types/product";
 
 type ProductCardProps = {
   product: Product
@@ -32,7 +32,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
     >
       <div className="px-3 pt-3 pb-1">
         <div className="relative w-full h-[200px]">
-          <Image src={product.productImages?.[0]?.image_url ?? "/Assets/category1.png"} alt={product.name} fill className="object-cover rounded-xl" />
+          <Image src={product.productImages?.[0]?.image_url ?? "/Assets/no_image.png"} alt={product.name} fill className="object-cover rounded-xl" />
         </div>
       </div>
 

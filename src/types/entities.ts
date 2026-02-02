@@ -1,11 +1,4 @@
-export interface Variant {
-  pvr_id: string;           // UUID
-  created_at: string;       // ISO timestamp
-  product_id: string | null;
-  name: string | null;
-  price: number | null;
-  quantity: number | null;
-}
+import type { Product, ProductImage, Variant } from "./product";
 
 export type OrderItem = {
   id: string;
@@ -64,25 +57,6 @@ export type OrderStatusHistory = {
   changed_by: string | null;
 
   note: string | null;
-};
-
-
-export interface ProductImage {
-  id: string;
-  image_url: string;
-  alt_text?: string;
-  priority?: number;
-};
-
-export interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  productImages: ProductImage[];
-  priceType: "fixed" | "variable";
-  price: number;
-  ProductVariants: Variant[];
-  relatedProducts?: Product[];
 };
 
 export interface Category {

@@ -15,7 +15,7 @@ export async function GET(req: Request) {
       .select(`
         *,
         productImages (id, image_url, alt_text, priority),
-        ProductVariants (pvr_id, name, price, quantity)
+        ProductVariants (pvr_id, name, price)
       `);
 
     if (category) {
