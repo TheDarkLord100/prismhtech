@@ -16,7 +16,7 @@ export default function CartItem({ item, updateCartItem, removeFromCart }: CartI
             item.product.productImages.length > 0 &&
             item.product.productImages[0].image_url
             ? item.product.productImages[0].image_url
-            : "/Assets/Category1.png";
+            : "/Assets/no_image.png";
     return (
         <div className="py-6">
 
