@@ -15,28 +15,49 @@ export default function ResetPasswordPage() {
   const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
-    // 🔑 THIS IS THE IMPORTANT PART
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === "PASSWORD_RECOVERY") {
-          setIsRecovery(true);
-        }
-      }
-    );
+    let isMounted = true;
 
-    // Clean URL hash (tokens)
-    if (window.location.hash) {
-      window.history.replaceState(
-        null,
-        "",
-        window.location.pathname
+    async function initRecovery() {
+      // 1️⃣ Check if Supabase already created a session
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session && isMounted) {
+        setIsRecovery(true);
+      }
+
+      // 2️⃣ Listen for auth state changes (backup)
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        (event) => {
+          if (event === "PASSWORD_RECOVERY" && isMounted) {
+            setIsRecovery(true);
+          }
+        }
       );
+
+      // 3️⃣ NOW it is safe to clean the hash
+      if (window.location.hash) {
+        window.history.replaceState(
+          null,
+          "",
+          window.location.pathname
+        );
+      }
+
+      return listener;
     }
 
+    let subscription: any;
+
+    initRecovery().then((listener) => {
+      subscription = listener;
+    });
+
     return () => {
-      listener.subscription.unsubscribe();
+      isMounted = false;
+      subscription?.subscription?.unsubscribe();
     };
   }, []);
+
 
   async function handleReset() {
     if (!isRecovery || loading) {
@@ -68,6 +89,7 @@ export default function ResetPasswordPage() {
     );
 
     setLoading(false);
+    window.location.href = "/login";
   }
 
   const disabled =

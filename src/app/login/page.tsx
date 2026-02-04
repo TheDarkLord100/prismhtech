@@ -103,12 +103,44 @@ export default function LoginPage() {
 
           {/* Forgot Password */}
           <div className="mb-6 text-left">
-            <a
-              href="#"
+            <button
+              onClick={async () => {
+                try {
+                  if (!email) {
+                    notify(
+                      Notification.FAILURE,
+                      "Please enter your email to reset password"
+                    );
+                    return;
+                  }
+
+                  const res = await fetch("/api/user/forgot-password", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email }),
+                  });
+
+                  const data = await res.json();
+
+                  if (!res.ok) throw new Error(data.error);
+
+                  notify(
+                    Notification.SUCCESS,
+                    "Password reset link has been sent to your email"
+                  );
+                } catch (err: any) {
+                  notify(
+                    Notification.FAILURE,
+                    err.message || "Failed to send reset link"
+                  );
+                }
+              }}
               className="text-sm font-medium text-[#4CAF50] hover:text-[#7E22CE]"
             >
               Forgot password ?
-            </a>
+            </button>
           </div>
 
           {/* Sign in Button */}
