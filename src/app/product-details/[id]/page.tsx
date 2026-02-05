@@ -25,8 +25,8 @@ export default function ProductDetailsPage() {
   const itemInCart =
     cart?.items?.find(
       (item) =>
-        item.product.id === id &&
-        item.variant.pvr_id === selectedVariant?.pvr_id
+        item.product!.id === id &&
+        item.variant!.pvr_id === selectedVariant?.pvr_id
     ) || null;
 
   useEffect(() => {

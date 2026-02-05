@@ -28,7 +28,8 @@ export async function POST(request: Request) {
         .select(
           `*,
            product:products(*, productImages(*)),
-           variant:ProductVariants(*)`
+           variant:ProductVariants(*),
+           metal:metals_live_prices(*)`
         )
         .eq("cart_id", cart.id);
 
@@ -42,6 +43,39 @@ export async function POST(request: Request) {
 
     // 🔁 merge each item
     for (const item of items) {
+      if (item.item_type === "metal") {
+        const { metal_id, quantity, unit_price } = item;
+
+        if (!metal_id || !quantity || !unit_price) continue;
+
+        const { data: existingItem } = await supabase
+          .from("cartItems")
+          .select("*")
+          .eq("cart_id", cart.id)
+          .eq("item_type", "metal")
+          .eq("metal_id", metal_id)
+          .maybeSingle();
+
+        if (existingItem) {
+          await supabase
+            .from("cartItems")
+            .update({
+              quantity: existingItem.quantity + quantity,
+            })
+            .eq("id", existingItem.id);
+        } else {
+          await supabase.from("cartItems").insert({
+            cart_id: cart.id,
+            item_type: "metal",
+            metal_id,
+            quantity,
+            unit_price, // 🔒 snapshot preserved
+          });
+        }
+
+        continue;
+      }
+
       const { product_id, variant_id, quantity } = item;
 
       if (!product_id || !variant_id || quantity <= 0) continue;
@@ -66,6 +100,7 @@ export async function POST(request: Request) {
           product_id,
           variant_id,
           quantity,
+          item_type: "product",
         });
       }
     }
@@ -76,7 +111,8 @@ export async function POST(request: Request) {
       .select(
         `*,
          product:products(*, productImages(*)),
-         variant:ProductVariants(*)`
+         variant:ProductVariants(*),
+         metal:metals_live_prices(*)`
       )
       .eq("cart_id", cart.id);
 

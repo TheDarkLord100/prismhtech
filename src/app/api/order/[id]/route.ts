@@ -56,7 +56,8 @@ export async function GET(
           *,
           productImages (*)
         ),
-        variant:ProductVariants (*)
+        variant:ProductVariants (*),
+        metal:metals_live_prices(*)
       `)
       .eq("ordr_id", id);
 

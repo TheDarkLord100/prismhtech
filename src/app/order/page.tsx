@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Order } from "@/types/entities";
+import { Order } from "@/types/order";
 
 const STATUS_ORDER = [
   "Order placed",
@@ -16,12 +16,24 @@ const STATUS_ORDER = [
 
 function PaymentBadge({ status }: { status?: string }) {
   if (status === "SUCCESS") {
-    return <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Paid</span>;
+    return (
+      <span className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
+        Paid
+      </span>
+    );
   }
   if (status === "FAILED") {
-    return <span className="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Payment Failed</span>;
+    return (
+      <span className="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">
+        Payment Failed
+      </span>
+    );
   }
-  return <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending Payment</span>;
+  return (
+    <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
+      Pending Payment
+    </span>
+  );
 }
 
 export default function OrderPage() {
@@ -40,7 +52,6 @@ export default function OrderPage() {
           credentials: "include",
         });
         const data = await res.json();
-        console.log("Order data:", data);
         if (data?.order) setOrder(data.order);
       } finally {
         setLoading(false);
@@ -75,7 +86,7 @@ export default function OrderPage() {
   }
 
   const historyMap = new Map(
-    order.history?.map(h => [h.new_status, h.changed_at])
+    order.history?.map((h) => [h.new_status, h.changed_at])
   );
 
   return (
@@ -87,11 +98,15 @@ export default function OrderPage() {
 
           {/* HEADER */}
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-green-700">Order Summary</h1>
+            <h1 className="text-3xl font-bold text-green-700">
+              Order Summary
+            </h1>
             <PaymentBadge status={order.payment_status} />
           </div>
 
-          <p className="text-gray-700 mb-1"><strong>Order ID:</strong> {order.id}</p>
+          <p className="text-gray-700 mb-1">
+            <strong>Order ID:</strong> {order.id}
+          </p>
           <p className="text-gray-700 mb-6">
             <strong>Placed on:</strong>{" "}
             {new Date(order.created_at).toLocaleDateString("en-IN")}
@@ -103,7 +118,6 @@ export default function OrderPage() {
               let isActive = false;
               let date: string | undefined;
 
-              // ✅ Order placed is ALWAYS active
               if (status === "Order placed") {
                 isActive = true;
                 date = order.created_at;
@@ -114,18 +128,20 @@ export default function OrderPage() {
 
               return (
                 <div key={status} className="flex items-center gap-3">
-                  {/* Dot */}
                   <div
-                    className={`w-3 h-3 rounded-full ${isActive ? "bg-green-600" : "bg-gray-300"
-                      }`}
+                    className={`w-3 h-3 rounded-full ${
+                      isActive ? "bg-green-600" : "bg-gray-300"
+                    }`}
                   />
-
-                  {/* Label */}
-                  <span className={isActive ? "font-medium text-black" : "text-gray-500"}>
+                  <span
+                    className={
+                      isActive
+                        ? "font-medium text-black"
+                        : "text-gray-500"
+                    }
+                  >
                     {status}
                   </span>
-
-                  {/* Date */}
                   {date && (
                     <span className="text-sm text-gray-500">
                       ({new Date(date).toLocaleDateString("en-IN")})
@@ -138,26 +154,78 @@ export default function OrderPage() {
 
           {/* ITEMS */}
           <h2 className="text-2xl font-semibold mb-4">Items</h2>
-          <div className="space-y-4 mb-8">
-            {order.items?.map(item => (
-              <div key={item.id} className="flex items-center gap-4 border rounded-xl p-4">
-                <img
-                  src={item.product?.productImages?.[0]?.image_url ?? "/placeholder.png"}
-                  className="w-20 h-20 rounded object-cover"
-                />
 
-                <div className="flex-1">
-                  <h3 className="font-semibold">{item.product?.name}</h3>
-                  <p className="text-gray-600">
-                    ₹{item.price} × {item.quantity}
+          <div className="space-y-4 mb-8">
+            {order.items?.map((item: any) => {
+              const isMetal = item.item_type === "metal";
+
+              if (isMetal) {
+                const lots = item.quantity / item.metal.lot_size;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 border rounded-xl p-4"
+                  >
+                    <div className="w-20 h-20 flex items-center justify-center rounded bg-gray-100 text-gray-600 text-sm">
+                      Metal
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="font-semibold">
+                        {item.metal.name}
+                      </h3>
+
+                      <p className="text-sm text-gray-600">
+                        Quantity: {item.quantity} {item.metal.unit}
+                        {" · "}
+                        {lots} lot{lots > 1 ? "s" : ""}
+                      </p>
+
+                      <p className="text-sm text-gray-600">
+                        ₹{item.price} / {item.metal.unit}
+                      </p>
+                    </div>
+
+                    <p className="font-semibold">
+                      ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                );
+              }
+
+              // PRODUCT ITEM
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-4 border rounded-xl p-4"
+                >
+                  <img
+                    src={
+                      item.product?.productImages?.[0]?.image_url ??
+                      "/placeholder.png"
+                    }
+                    className="w-20 h-20 rounded object-cover"
+                  />
+
+                  <div className="flex-1">
+                    <h3 className="font-semibold">
+                      {item.product?.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {item.variant?.name}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      ₹{item.price} × {item.quantity}
+                    </p>
+                  </div>
+
+                  <p className="font-semibold">
+                    ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </p>
                 </div>
-
-                <p className="font-semibold">
-                  ₹{item.price * item.quantity}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* PRICE SUMMARY */}
@@ -177,7 +245,6 @@ export default function OrderPage() {
               Total: ₹{order.total_amount}
             </p>
           </div>
-
         </div>
       </main>
 

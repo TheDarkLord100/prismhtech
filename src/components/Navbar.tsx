@@ -86,7 +86,7 @@ export default function Navbar({ type = "transparent" }: { type?: string }) {
 
       <div
         aria-hidden={!open}
-        className={`fixed inset-0 z-[60] md:hidden transition-all duration-300 ease-out
+        className={`fixed inset-0 z-[600] md:hidden transition-all duration-300 ease-out
           ${open ? "translate-x-0 opacity-100 pointer-events-auto" : "translate-x-full opacity-0 pointer-events-none"}`}
       >
         <div className="absolute inset-0 bg-white/40 backdrop-blur-xl" />

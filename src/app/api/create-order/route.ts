@@ -2,7 +2,6 @@ import Razorpay from "razorpay";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import type { CartItem } from "@/types/entities";
 
 export async function POST(request: Request) {
     try {
@@ -35,6 +34,50 @@ export async function POST(request: Request) {
                 { status: 400 }
             );
         }
+
+        // Checking if the metal prices are still valid or not
+
+        const metalItems = cart_items.filter(
+            (item: any) => item.item_type === "metal"
+        );
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        const { data: liveMetals, error: metalError } = await supabase
+            .from("metals_live_prices")
+            .select("id, live_price, last_updated_at, is_visible")
+            .eq("is_visible", true)
+            .gte("last_updated_at", `${today}T00:00:00`)
+            .lte("last_updated_at", `${today}T23:59:59`);
+
+        if (metalError) throw metalError;
+
+        const liveMetalMap = new Map(
+            liveMetals.map(m => [m.id, m])
+        );
+
+        for (const item of metalItems) {
+            const liveMetal = liveMetalMap.get(item.metal_id);
+
+            if (!liveMetal) {
+                return NextResponse.json(
+                    { success: false, error: "Metal price has expired. Please remove the item from the cart and try again." },
+                    { status: 400 }
+                );
+            }
+
+            if (item.price !== liveMetal.live_price) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: `Price for metals has changed. Please remove the item from the cart and add it again.`,
+                    },
+                    { status: 400 }
+                );
+            }
+        }
+
+
 
         const SELLER_STATE = "Haryana";
         const GST_RATE = 0.18;
@@ -90,13 +133,25 @@ export async function POST(request: Request) {
             throw orderError;
         }
 
-        const orderItems = cart_items.map((item: any) => ({
-            product_id: item.product_id,
-            variant_id: item.variant_id,
-            ordr_id: orderData.id,
-            quantity: item.quantity,
-            price: item.price,
-        }));
+        const orderItems = cart_items.map((item: any) => {
+            if (item.item_type === "product") {
+                return {
+                    item_type: "product",
+                    product_id: item.product_id,
+                    variant_id: item.variant_id,
+                    ordr_id: orderData.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                };
+            }
+            return {
+                item_type: "metal",
+                metal_id: item.metal_id,
+                ordr_id: orderData.id,
+                quantity: item.quantity,
+                price: item.price,
+            }
+        });
 
         const { error: itemsError } = await supabase
             .from("OrderItems")

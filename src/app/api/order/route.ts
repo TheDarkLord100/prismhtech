@@ -34,13 +34,12 @@ export async function GET(request: Request) {
         const { data: items, error: itemsErr } = await supabase
             .from("OrderItems")
             .select(
-                `
-            *,
-            product:products(
-            *,
-            productImages(*)
+                `*,
+            product:products(*,
+                   productImages(*)
             ),
-            variant:ProductVariants(*)
+            variant:ProductVariants(*),
+            metal:metals_live_prices(*)
             `
             )
             .in("ordr_id", orderIds);

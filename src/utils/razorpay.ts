@@ -1,3 +1,5 @@
+import { Notification, notify } from "./notify";
+
 export async function handleProceedToPayment({
   selectedDeliveryId,
   selectedBillingId,
@@ -26,11 +28,11 @@ export async function handleProceedToPayment({
   clearCart: ({ invisible }: { invisible: boolean }) => Promise<void>;
 }) {
   if (!selectedDeliveryId) {
-    alert("Please select a delivery address before proceeding to payment.");
+    notify(Notification.WARNING, "Please select a delivery address before proceeding.");
     return;
   }
   if (!sameAsDelivery && !selectedBillingId) {
-    alert("Please select a billing address before proceeding.");
+    notify(Notification.WARNING, "Please select a billing address before proceeding.");
     return;
   }
 
@@ -49,16 +51,27 @@ export async function handleProceedToPayment({
 
   const loaded = await loadRazorpay();
   if (!loaded) {
-    alert("Failed to load Razorpay SDK. Try again.");
+    notify(Notification.FAILURE, "Failed to load Razorpay SDK. Try again.");
     return;
   }
 
-  const cartItems = cart.items.map((item: any) => ({
-    product_id: item.product_id,
-    variant_id: item.variant.pvr_id,
-    quantity: item.quantity,
-    price: item.variant.price,
-  }));
+  const cartItems = cart.items.map((item: any) => {
+    if (item.item_type === "product") {
+      return {
+        item_type: "product",
+        product_id: item.product_id,
+        variant_id: item.variant.pvr_id,
+        quantity: item.quantity,
+        price: item.variant.price,
+      };
+    }
+    return {
+      item_type: "metal",
+      metal_id: item.metal_id,
+      quantity: item.quantity,
+      price: item.unit_price,
+    }
+  });
 
   const res = await fetch("/api/create-order", {
     method: "POST",
@@ -80,7 +93,7 @@ export async function handleProceedToPayment({
   const data = await res.json();
 
   if (!data.success) {
-    alert("Failed to create order: " + data.message);
+    notify(Notification.FAILURE, "Failed to create order: " + data.error);
   }
 
   const razorpayOrder = data.razorpay_order;
@@ -114,7 +127,7 @@ export async function handleProceedToPayment({
         await clearCart({ invisible: true });
         window.location.href = `/order?order_id=${orderId}`;
       } else {
-        alert("Payment verification failed: " + verifyData.message);
+        notify(Notification.FAILURE, "Payment verification failed: " + verifyData.error);
       }
     },
     prefill: {

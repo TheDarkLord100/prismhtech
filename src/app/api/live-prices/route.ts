@@ -10,6 +10,7 @@ export async function GET() {
             .select(`
             id,
             name,
+            unit,
             live_price,
             lot_size,
             minimum_quantity,

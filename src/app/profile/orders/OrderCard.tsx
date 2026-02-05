@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { Order } from "@/types/entities";
-import type { OrderItem } from "@/types/entities";
+import type { Order } from "@/types/order";
 import { useRouter } from "next/navigation";
 
 const STATUS_INDEX: Record<string, number> = {

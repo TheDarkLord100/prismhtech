@@ -34,7 +34,7 @@ export default function MarketRatesWidget({ metals }: Props) {
   return (
     <div
       ref={containerRef}
-      className="fixed top-20 right-6 z-[9999] font-['Gotham']"
+      className="fixed top-20 right-6 z-[99] font-['Gotham']"
     >
       {/* CLOSED STATE */}
       {!open && (

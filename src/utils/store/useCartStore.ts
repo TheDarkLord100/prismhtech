@@ -3,16 +3,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
-  Cart,
-  CartItem,
   CartItemDetails,
   CartWithItems
-} from "@/types/entities";
-import type{
-  Product, 
+} from "@/types/cart";
+import type {
+  Product,
   Variant
 } from "@/types/product"
 import { useUserStore } from "./userStore";
+import { Metal } from "@/types/entities";
 
 interface CartStore {
   cart: CartWithItems | null;
@@ -29,6 +28,8 @@ interface CartStore {
 
   getTotalItems: () => number;
   getTotalPrice: () => number;
+
+  addMetalToCart: (metal: Metal, quantity: number) => Promise<void>;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -52,6 +53,7 @@ export const useCartStore = create<CartStore>()(
             product,
             variant,
             quantity,
+            item_type: "product",
           });
           set({ cart: localCart, loading: false, message: "Item added to cart" });
           return;
@@ -201,11 +203,24 @@ export const useCartStore = create<CartStore>()(
         if (!cart || cart.id !== "local-cart") return;
         if (!cart.items || cart.items.length === 0) return;
 
-        const payload = cart.items.map(item => ({
-          product_id: item.product.id,
-          variant_id: item.variant.pvr_id,
-          quantity: item.quantity,
-        }));
+        const payload = cart.items.map(item => {
+          if (item.item_type === "metal") {
+            return {
+              item_type: "metal",
+              metal_id: item.metal!.id,
+              quantity: item.quantity,
+              unit_price: item.unit_price!, // snapshot price
+            };
+          }
+
+          // product item
+          return {
+            item_type: "product",
+            product_id: item.product!.id,
+            variant_id: item.variant!.pvr_id,
+            quantity: item.quantity,
+          };
+        });
 
         set({ loading: true, error: null });
 
@@ -230,7 +245,7 @@ export const useCartStore = create<CartStore>()(
           set({ loading: false, error: error.message });
         }
       },
-      
+
       getTotalItems: () => {
         const cart = get().cart;
         if (!cart || !cart.items) return 0;
@@ -240,11 +255,62 @@ export const useCartStore = create<CartStore>()(
       getTotalPrice: () => {
         const cart = get().cart;
         if (!cart || !cart.items) return 0;
+
         return cart.items.reduce((sum, item) => {
+          if (item.item_type === "metal") {
+            return sum + (item.unit_price ?? 0) * item.quantity;
+          }
+
           const price = item.variant?.price ?? 0;
           return sum + price * item.quantity;
         }, 0);
       },
+
+
+      addMetalToCart: async (metal, quantity) => {
+        set({ loading: true, error: null });
+        const { user } = useUserStore.getState();
+        const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
+
+        if (quantity < metal.minimum_quantity) {
+          set({ loading: false, error: `Minimum quantity for ${metal.name} is ${metal.minimum_quantity}` });
+          return;
+        }
+
+        if (quantity % metal.lot_size !== 0) {
+          set({ loading: false, error: `Quantity for ${metal.name} must be in multiples of ${metal.lot_size}` });
+          return;
+        }
+
+        if (!user) {
+          const localCart = cart;
+          localCart?.items.push({
+            id: `local-${Date.now()}`,
+            metal,
+            quantity,
+            item_type: "metal",
+            unit_price: metal.live_price,
+          });
+          set({ cart: localCart, loading: false, message: "Item added to cart" });
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/cart/metal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ metal_id: metal.id, quantity })
+          });
+
+          if (!res.ok) throw new Error("Failed to add metal to cart");
+
+          const cart = await res.json();
+          set({ cart, loading: false, message: "Item added to cart" });
+        } catch (error: any) {
+          set({ loading: false, error: error.message });
+        }
+      }
     }),
 
     {

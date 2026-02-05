@@ -1,64 +1,3 @@
-import type { Product, ProductImage, Variant } from "./product";
-
-export type OrderItem = {
-  id: string;
-  created_at: string;
-  product_id: string;
-  variant_id: string | null;
-  ordr_id: string;
-  quantity: number;
-  price: number;
-  product?: Product | null;
-  variant?: Variant | null;
-};
-
-
-
-export type Order = {
-  id: string;
-  created_at: string;
-
-  user_id: string;
-
-  subtotal_amount: number;
-  gst_rate: number;
-  gst_type: "CGST_SGST" | "IGST";
-  cgst_amount: number;
-  sgst_amount: number;
-  igst_amount: number;
-  total_amount: number;
-
-  payment_status: string;
-  payment_type: string | null;
-  razorpay_order_id: string | null;
-
-  status: string;
-  status_description: string | null;
-
-  shipping_address_id: string | null;
-  billing_address_id: string | null;
-
-  shipping_address?: Address | null;
-  billing_address?: Address | null;
-
-  items?: OrderItem[];
-
-  history?: OrderStatusHistory[];
-};
-
-export type OrderStatusHistory = {
-  id: string;
-  order_id: string;
-
-  old_status: string | null;
-  new_status: string;
-
-  changed_at: string;
-  changed_by: string | null;
-
-  note: string | null;
-};
-
 export interface Category {
   id: string;
   name: string;
@@ -82,28 +21,6 @@ export interface User {
   created_at?: string;
   email_verified?: boolean;
 }
-
-export interface Cart {
-  id: string;
-}
-
-export interface CartItem {
-  id: string;
-  cart_id?: string | null;
-  product_id?: string | null;
-  variant_id?: string | null;
-  quantity: number;
-}
-
-export interface CartItemDetails extends CartItem {
-  product: Product;
-  variant: Variant;
-}
-
-export interface CartWithItems extends Cart {
-  items: CartItemDetails[];
-}
-
 export interface Address {
   adr_id: string;
   name: string | null;
@@ -120,6 +37,7 @@ export interface Address {
 export interface Metal {
   id: string;
   name: string;
+  unit: string;
   live_price: number;
   lot_size: number;
   minimum_quantity: number;

@@ -15,7 +15,7 @@ import { handleProceedToPayment } from "@/utils/razorpay";
 
 export default function CheckoutPage() {
 
-    const router = useRouter();
+    const [loading, setLoading] = useState(false);
     const { addresses, fetchAddresses, addAddress, updateAddress, deleteAddress } = useAddressStore();
     const { cart, getTotalItems, getTotalPrice, clearCart } = useCartStore();
 
@@ -188,9 +188,11 @@ export default function CheckoutPage() {
                         )}
 
                         <button
-                            disabled={!isCheckoutAllowed}
-                            onClick={() =>
-                                handleProceedToPayment({
+                            disabled={!isCheckoutAllowed || loading}
+                            onClick={async () =>
+                            {
+                                setLoading(true);
+                                await handleProceedToPayment({
                                     selectedDeliveryId,
                                     selectedBillingId: sameAsDelivery
                                         ? selectedDeliveryId
@@ -208,15 +210,17 @@ export default function CheckoutPage() {
                                     totalAmount: grandTotal,
                                     user,
                                     clearCart,
-                                })
+                                });
+                                setLoading(false);
+                            }
                             }
                             className={`w-full mt-4 py-2 rounded-2xl text-lg transition
-      ${isCheckoutAllowed
+      ${isCheckoutAllowed || loading
                                     ? "bg-yellow-400 hover:bg-yellow-500 text-white"
                                     : "bg-gray-300 cursor-not-allowed text-gray-600"
                                 }`}
                         >
-                            Proceed to Buy
+                            {loading ? "Processing..." : "Proceed to Payment"}
                         </button>
                     </aside>
 

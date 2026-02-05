@@ -52,7 +52,8 @@ export async function POST(request: Request) {
             .from("cartItems")
             .select(`*,
                 product:products(*, productImages(*)),
-                variant:ProductVariants(*)`)
+                variant:ProductVariants(*),
+                metal:metals_live_prices(*)`)
             .eq("cart_id", cart.id);
 
         if (itemsError) throw itemsError;

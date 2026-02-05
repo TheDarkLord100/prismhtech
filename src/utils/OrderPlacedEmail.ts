@@ -92,6 +92,11 @@ export async function sendOrderPlacedEmail({
     ),
     variant:ProductVariants (
       name
+    ),
+    metal:metals_live_prices (
+      name,
+      unit,
+      lot_size
     )
   `)
     .eq("ordr_id", orderId);
@@ -101,25 +106,50 @@ export async function sendOrderPlacedEmail({
     throw new Error("Order items not found");
   }
 
+  const hasMetalItem = itemsData.some(
+    (item: any) => item.item_type === "metal"
+  );
+
+
   /* =======================
      3️⃣ Build Items HTML
      ======================= */
 
   const itemsHtml = (itemsData as any[])
     .map((item) => {
-      const product = item.product ?? null;
-      const variant = item.variant ?? null;
+      if (item.item_type === "metal" && item.metal) {
+        const lots = item.quantity / item.metal.lot_size;
 
-      return `
+        return `
         <tr>
           <td>
-            ${product?.name ?? "Product"}
-            ${variant?.name ? `(${variant.name})` : ""}
+            <strong>${item.metal.name}</strong><br/>
+            <span style="color:#777; font-size:12px;">
+              ${item.quantity} ${item.metal.unit}
+              (${lots} lot${lots > 1 ? "s" : ""})
+            </span>
           </td>
-          <td>${item.quantity}</td>
-          <td>₹${item.price}</td>
+          <td align="center">
+            ${item.quantity} ${item.metal.unit}
+          </td>
+          <td align="right">
+            ₹${item.price} / ${item.metal.unit}
+          </td>
         </tr>
       `;
+      }
+
+      // PRODUCT ITEM
+      return `
+      <tr>
+        <td>
+          ${item.product?.name ?? "Product"}
+          ${item.variant?.name ? `(${item.variant.name})` : ""}
+        </td>
+        <td align="center">${item.quantity}</td>
+        <td align="right">₹${item.price}</td>
+      </tr>
+    `;
     })
     .join("");
 
@@ -170,9 +200,27 @@ export async function sendOrderPlacedEmail({
                 border-bottom:1px solid #f0e0b5;
               "
             >
-              ⚠️ THIS IS A PROVISIONAL ORDER CONFIRMATION — NOT A LEGAL TAX INVOICE
+              ⚠️ THIS IS A PROVISIONAL ORDER CONFIRMATION — NOT A LEGAL TAX INVOICE. 
             </td>
           </tr>
+          ${hasMetalItem ? `
+            <tr>
+            <td
+              style="
+                background-color:#fff8e1;
+                color:#8a6d3b;
+                padding:12px 20px;
+                text-align:center;
+                font-size:13px;
+                font-weight:bold;
+                border-bottom:1px solid #f0e0b5;
+              "
+            >
+              For metal orders, the final payable amount may vary slightly based on
+              actual dispatched weight. Any difference will be communicated before dispatch.
+            </td>
+          </tr>` : ""
+    }
             <tr>
               <td style="padding:30px; position:relative;">
                 <!-- REAL CONTENT -->

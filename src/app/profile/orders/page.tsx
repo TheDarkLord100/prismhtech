@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OrderCard from "./OrderCard";
-import type { Order } from "@/types/entities";
+import type { Order } from "@/types/order";
 
 export default function YourOrders() {
   const [orders, setOrders] = useState<Order[]>([]);

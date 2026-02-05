@@ -26,7 +26,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
             .from("cartItems")
             .select(`*,
                 product:products(*, productImages(*)),
-                variant:ProductVariants(*)`)
+                variant:ProductVariants(*),
+                metal:metals_live_prices(*)`)
             .eq("cart_id", cart.id);
 
         if (itemsError) throw itemsError;
@@ -71,7 +72,8 @@ export async function PUT(
             .from("cartItems")
             .select(`*,
                 product:products(*, productImages(*)),
-                variant:ProductVariants(*)`)
+                variant:ProductVariants(*),
+                metal:metals_live_prices(*)`)
             .eq("cart_id", cart.id);
         
         if (itemsError) throw itemsError;
