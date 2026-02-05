@@ -141,3 +141,82 @@ export async function handleProceedToPayment({
   const rzp = new (window as any).Razorpay(options);
   rzp.open();
 }
+
+export async function handleRetryPayment({
+  orderId,
+}: {
+  orderId: string;
+}) {
+
+  const loadRazorpay = () =>
+    new Promise((resolve) => {
+      if (document.getElementById("razorpay-sdk")) return resolve(true);
+
+      const script = document.createElement("script");
+      script.id = "razorpay-sdk";
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+
+  const loaded = await loadRazorpay();
+  if (!loaded) {
+    notify(Notification.FAILURE, "Failed to load Razorpay SDK. Try again.");
+    return;
+  }
+  
+  const res = await fetch("/api/order/retry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ order_id: orderId }),
+  })
+
+  const data = await res.json();
+
+  if (!data.success) {
+    notify(Notification.FAILURE, "Failed to initiate retry payment: " + data.error);
+    return;
+  }
+
+  const razorpayOrder = data.razorpay_order;
+
+  const options = {
+    key: process.env.NEXT_PUBLIC_RAZORYPAY_KEY!,
+    amount: razorpayOrder.amount,
+    currency: "INR",
+    name: "Pervesh Rasayan Pvt. Ltd.",
+    description: "Order Id: " + orderId,
+    order_id: razorpayOrder.id,
+
+    handler: async function (response: any) {
+      const verifyRes = await fetch("/api/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          razorpay_order_id: razorpayOrder.id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          order_id: orderId,
+          transaction_id: response.razorpay_payment_id,
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (verifyData.success) {
+        notify(Notification.SUCCESS, "Payment successful!");
+        window.location.href = `/order?order_id=${orderId}`;
+      } else {
+        notify(Notification.FAILURE, "Payment verification failed: " + verifyData.error);
+      }
+    },
+    theme: { color: "#3399cc" },
+  };
+
+  const rzp = new (window as any).Razorpay(options);
+
+  rzp.open();
+}

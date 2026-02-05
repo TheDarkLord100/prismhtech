@@ -3,6 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import type { Order } from "@/types/order";
 import { useRouter } from "next/navigation";
+import { notify, Notification } from "@/utils/notify";
+import { handleRetryPayment } from "@/utils/razorpay";
+
+const comingSoon = () => {
+    notify(
+        Notification.INFO,
+        "This feature will be available soon."
+    );
+};
+
 
 const STATUS_INDEX: Record<string, number> = {
     "Order placed": 0,
@@ -135,8 +145,13 @@ const OrderHeader = ({ order }: { order: Order }) => {
 
 export default function OrderCard({ order }: { order: Order }) {
     const item = order.items?.[0];
+
+    const firstItemName =
+        item?.item_type === "metal"
+            ? item.metal?.name
+            : item?.product?.name;
     const router = useRouter();
-    console.log("Rendering OrderCard for order:", order);
+    const [loading, setLoading] = useState(false);
     return (
         <div className="border border-gray-200 shadow-sm rounded-3xl overflow-hidden bg-white mb-8">
             <div className="bg-gray-200 px-6 py-5">
@@ -145,7 +160,7 @@ export default function OrderCard({ order }: { order: Order }) {
 
             <div className="p-6">
                 <h3 className="text-lg font-bold mb-4 text-black">
-                    {item!.product?.name} {order.items!.length > 1 ? `and ${order.items!.length - 1} more item${order.items!.length - 1 > 1 ? "s" : ""}` : ""}
+                    {firstItemName} {order.items!.length > 1 ? `and ${order.items!.length - 1} more item${order.items!.length - 1 > 1 ? "s" : ""}` : ""}
                 </h3>
 
                 {/* FLEX WRAPPER — mobile = column, desktop = row */}
@@ -154,7 +169,7 @@ export default function OrderCard({ order }: { order: Order }) {
                     {/* IMAGE — centered on mobile */}
                     <div className="w-64 h-64 overflow-hidden rounded-xl mx-auto lg:mx-0">
                         <img
-                            src={item!.product?.productImages?.[0]?.image_url ?? "/placeholder.png"}
+                            src={item!.product?.productImages?.[0]?.image_url ?? "/Assets/no_image.png"}
                             alt={item!.product?.name ?? "Product"}
                             className="object-cover w-full h-full"
                         />
@@ -247,15 +262,21 @@ export default function OrderCard({ order }: { order: Order }) {
 
                     {/* RIGHT BUTTONS — stacked vertically, moved under progress in mobile */}
                     <div className="flex flex-col space-y-2 w-full lg:w-auto lg:items-end mt-6 lg:mt-0">
-                        <button className="bg-gradient-to-r from-green-800 to-green-600 text-white font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
+                        <button
+                            onClick={comingSoon}
+                            className="bg-gradient-to-r from-green-800 to-green-600 text-white font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
                             Get product support
                         </button>
 
-                        <button className="bg-white border-2 border-green-700 text-green-700 hover:bg-green-50 font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
+                        <button
+                            onClick={comingSoon}
+                            className="bg-white border-2 border-green-700 text-green-700 hover:bg-green-50 font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
                             Ask Product Question
                         </button>
 
-                        <button className="bg-white border-2 border-green-700 text-green-700 hover:bg-green-50 font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
+                        <button
+                            onClick={comingSoon}
+                            className="bg-white border-2 border-green-700 text-green-700 hover:bg-green-50 font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
                             Write a product review
                         </button>
                     </div>
@@ -264,7 +285,9 @@ export default function OrderCard({ order }: { order: Order }) {
 
                 {/* BUY AGAIN — Always at bottom */}
                 <div className="flex space-x-3 mt-6 justify-center lg:justify-start">
-                    <button className="bg-gradient-to-r from-green-800 to-green-600 text-white text-sm font-semibold py-1.5 px-6 rounded-full shadow-md">
+                    <button
+                        onClick={comingSoon}
+                        className="bg-gradient-to-r from-green-800 to-green-600 text-white text-sm font-semibold py-1.5 px-6 rounded-full shadow-md">
                         Buy again
                     </button>
 
@@ -274,6 +297,23 @@ export default function OrderCard({ order }: { order: Order }) {
                     >
                         View Order Details
                     </button>
+
+                    {
+                        order.payment_status === "FAILED" && (
+                            <button
+                                disabled={loading}
+                                className="bg-white border border-gray-300 text-gray-700 text-sm font-semibold py-1.5 px-6 rounded-full shadow-md"
+                                onClick={() => {
+                                    if (loading) return;
+                                    setLoading(true);
+                                    handleRetryPayment({ orderId: order.id })
+                                        .finally(() => setLoading(false));
+                                }}
+                            >
+                                Retry Payment
+                            </button>
+                        )
+                    }
                 </div>
             </div>
 
