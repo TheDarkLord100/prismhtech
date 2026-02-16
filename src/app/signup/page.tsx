@@ -38,6 +38,19 @@ export default function SignUpPage() {
     }
     const supabase = createClient();
     setLoading(true);
+    const checkRes = await fetch("/api/user/check-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const checkData = await checkRes.json();
+
+    if (!checkRes.ok) {
+      notify(Notification.FAILURE, checkData.message || checkData.error || "Error checking email");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
