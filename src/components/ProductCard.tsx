@@ -15,7 +15,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   const { addToCart, cart, updateCartItem } = useCartStore();
 
   const defaultVariant = product.ProductVariants?.[0] || null;
-  const itemPresentInCart = cart?.items?.find((item) => item.product!.id === product.id) || null;
+  const itemPresentInCart = cart?.items?.find((item) => item.item_type === "product" && item.product_id === product.id) || null;
   const handleClick = () => {
     if (onClick) {
       onClick();

@@ -23,12 +23,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const razorpayUrl = `https://razorpay.com/api/gstin/${gstin}`;
+    const lambdaUrl = process.env.RAZORPAY_GST_LAMBDA_URL;
 
-    const response = await fetch(razorpayUrl, {
-      method: "GET",
+    const response = await fetch(lambdaUrl!, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
+      body: JSON.stringify({ gstin }),
     });
 
     const data = await response.json();
