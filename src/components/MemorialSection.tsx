@@ -14,7 +14,7 @@ export default function MemorialSection() {
             Shri M.L. Kakar
           </h2>
           <p className="text-gray-200 mt-6 leading-relaxed font-['Gotham']">
-             Founded in <span className="font-bold">1984</span> by <span className="font-bold">Shri M.L. Kakar</span>, Pervesh Rasayan stands on a legacy of unyielding integrity and visionary purpose. 
+             Founded in <span className="font-bold">1984</span> by <span className="font-bold">Shri M.L. Kakar</span>, Pervesh Rasayan Pvt. Ltd. stands on a legacy of unyielding integrity and visionary purpose. 
              <br/>
              <br/>
              For over four decades, we have been the trusted bridge in electroplating and industrial chemicals, not just delivering products, but embodying Quality, Trust, and Enduring Value. 

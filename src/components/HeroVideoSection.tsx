@@ -24,7 +24,7 @@ export default function HeroVideoSection() {
       bg-black/25 md:bg-white/5 backdrop-blur shadow-lg border-t border-b border-white/30"
                     >
                         <h3 className="text-lg md:text-2xl text-white/90 drop-shadow-lg">
-                            Pervesh Rasayan
+                            Pervesh Rasayan Pvt. Ltd.
                         </h3>
 
                         <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold italic text-yellow-400 drop-shadow-lg">

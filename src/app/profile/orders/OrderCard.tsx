@@ -5,6 +5,7 @@ import type { Order } from "@/types/order";
 import { useRouter } from "next/navigation";
 import { notify, Notification } from "@/utils/notify";
 import { handleRetryPayment } from "@/utils/razorpay";
+import { useCartStore } from "@/utils/store/useCartStore";
 
 const comingSoon = () => {
     notify(
@@ -144,6 +145,10 @@ const OrderHeader = ({ order }: { order: Order }) => {
 
 
 export default function OrderCard({ order }: { order: Order }) {
+
+    const { reorderCart, loading: cartLoading } = useCartStore();
+
+
     const item = order.items?.[0];
 
     const firstItemName =
@@ -286,9 +291,19 @@ export default function OrderCard({ order }: { order: Order }) {
                 {/* BUY AGAIN — Always at bottom */}
                 <div className="flex space-x-3 mt-6 justify-center lg:justify-start">
                     <button
-                        onClick={comingSoon}
-                        className="bg-gradient-to-r from-green-800 to-green-600 text-white text-sm font-semibold py-1.5 px-6 rounded-full shadow-md">
-                        Buy again
+                        disabled={cartLoading}
+                        onClick={async () => {
+                            try {
+                                await reorderCart(order.id);
+                                notify(Notification.SUCCESS, "Items added to cart");
+                                router.push("/cart"); // optional but recommended
+                            } catch (e) {
+                                notify(Notification.FAILURE, "Failed to reorder items");
+                            }
+                        }}
+                        className="bg-gradient-to-r from-green-800 to-green-600 text-white text-sm font-semibold py-1.5 px-6 rounded-full shadow-md disabled:opacity-50"
+                    >
+                        {cartLoading ? "Adding..." : "Buy again"}
                     </button>
 
                     <button

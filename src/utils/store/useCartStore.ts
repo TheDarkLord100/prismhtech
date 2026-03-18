@@ -25,6 +25,7 @@ interface CartStore {
   clearCart: ({ invisible }: { invisible: boolean }) => Promise<void>;
   fetchCart: () => Promise<void>;
   mergeGuestCart: () => Promise<void>;
+  reorderCart: (orderId: string) => Promise<void>;
 
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -41,38 +42,65 @@ export const useCartStore = create<CartStore>()(
       message: null,
 
       addToCart: async (product, variant, quantity) => {
-        set({ loading: true, error: null });
-        console.log("Adding to cart:", { product, variant, quantity });
-        console.log("Current cart state:", get().cart);
+        set({ loading: true, error: null, message: null });
+
         const { user } = useUserStore.getState();
         const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
+
         if (!user) {
-          const localCart = cart;
-          localCart?.items.push({
-            id: `local-${Date.now()}`,
-            product,
-            variant,
-            quantity,
-            item_type: "product",
+          const existingIndex = cart.items.findIndex(
+            (item) =>
+              item.item_type === "product" &&
+              item.product?.id === product.id &&
+              item.variant?.pvr_id === variant.pvr_id
+          );
+
+          let updatedItems;
+
+          if (existingIndex > -1) {
+            updatedItems = cart.items.map((item, i) =>
+              i === existingIndex
+                ? { ...item, quantity: item.quantity + quantity }
+                : item
+            );
+          } else {
+            updatedItems = [
+              ...cart.items,
+              {
+                id: `local-${Date.now()}`,
+                product,
+                variant,
+                quantity,
+                item_type: "product" as const,
+              },
+            ];
+          }
+
+          set({
+            cart: { ...cart, items: updatedItems },
+            loading: false,
+            message: "Item added to cart",
           });
-          set({ cart: localCart, loading: false, message: "Item added to cart" });
           return;
         }
+
         try {
           const response = await fetch(`/api/cart/item`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ product_id: product.id, variant_id: variant.pvr_id, quantity })
+            body: JSON.stringify({
+              product_id: product.id,
+              variant_id: variant.pvr_id,
+              quantity,
+            }),
           });
 
           if (!response.ok) throw new Error("Failed to add item to cart");
 
-          const cart = await response.json();
-          console.log("Updated local cart:", cart);
-          set({ cart, loading: false, message: "Item added to cart" });
+          const cartData = await response.json();
+
+          set({ cart: cartData, loading: false, message: "Item added to cart" });
         } catch (error: any) {
           set({ loading: false, error: error.message });
         }
@@ -88,12 +116,17 @@ export const useCartStore = create<CartStore>()(
         }
 
         if (!user) {
-          const localCart = cart;
-          const itemIndex = localCart?.items.findIndex(item => item.id === CartItemId);
-          if (itemIndex !== undefined && itemIndex > -1 && localCart) {
-            localCart.items[itemIndex].quantity = quantity;
-            set({ cart: localCart, loading: false, message: "Cart updated successfully" });
-          }
+          const updatedItems = cart.items.map((item) =>
+            item.id === CartItemId ? { ...item, quantity } : item
+          );
+
+          set({
+            cart: { ...cart, items: updatedItems },
+            loading: false,
+            message: "Cart updated successfully",
+          });
+
+          return;
         }
 
         try {
@@ -121,10 +154,16 @@ export const useCartStore = create<CartStore>()(
         const { user } = useUserStore.getState();
         const { cart } = get();
         if (!user) {
-          const localCart = cart;
-          const updatedItems = localCart?.items.filter(item => item.id !== CartItemId) || [];
-          localCart!.items = updatedItems;
-          set({ cart: localCart, loading: false, message: "Item removed from cart" });
+          const updatedItems = (cart?.items || []).filter(
+            (item) => item.id !== CartItemId
+          );
+
+          set({
+            cart: { ...cart!, items: updatedItems },
+            loading: false,
+            message: "Item removed from cart",
+          });
+
           return;
         }
         try {
@@ -150,8 +189,11 @@ export const useCartStore = create<CartStore>()(
         const cart = get().cart || { id: "local-cart", items: [] as CartItemDetails[] };
 
         if (!user) {
-          cart.items = [];
-          set({ cart, loading: false, message: invisible ? null : "Cart cleared successfully" });
+          set({
+            cart: { ...cart, items: [] },
+            loading: false,
+            message: invisible ? null : "Cart cleared successfully",
+          });
           return;
         }
 
@@ -266,6 +308,45 @@ export const useCartStore = create<CartStore>()(
         }, 0);
       },
 
+      reorderCart: async (orderId) => {
+        const { user } = useUserStore.getState();
+
+        if (!user) {
+          set({ error: "Please login to reorder items" });
+          return;
+        }
+
+        set({ loading: true, error: null, message: null });
+
+        try {
+          const res = await fetch("/api/cart/reorder", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ order_id: orderId }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to reorder");
+          }
+
+          set({
+            cart: data,
+            loading: false,
+            message: "Items added to cart successfully",
+          });
+
+        } catch (error: any) {
+          set({
+            loading: false,
+            error: error.message,
+          });
+        }
+      },
 
       addMetalToCart: async (metal, quantity) => {
         set({ loading: true, error: null });
@@ -283,15 +364,39 @@ export const useCartStore = create<CartStore>()(
         }
 
         if (!user) {
-          const localCart = cart;
-          localCart?.items.push({
-            id: `local-${Date.now()}`,
-            metal,
-            quantity,
-            item_type: "metal",
-            unit_price: metal.live_price,
+          const existingIndex = cart.items.findIndex(
+            (item) =>
+              item.item_type === "metal" &&
+              item.metal?.id === metal.id
+          );
+
+          let updatedItems;
+
+          if (existingIndex > -1) {
+            updatedItems = cart.items.map((item, i) =>
+              i === existingIndex
+                ? { ...item, quantity: item.quantity + quantity }
+                : item
+            );
+          } else {
+            updatedItems = [
+              ...cart.items,
+              {
+                id: `local-${Date.now()}`,
+                metal,
+                quantity,
+                item_type: "metal" as const,
+                unit_price: metal.live_price,
+              },
+            ];
+          }
+
+          set({
+            cart: { ...cart, items: updatedItems },
+            loading: false,
+            message: "Item added to cart",
           });
-          set({ cart: localCart, loading: false, message: "Item added to cart" });
+
           return;
         }
 
