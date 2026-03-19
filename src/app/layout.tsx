@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pervesh Rasayan",
+  title: "Pervesh Rasayan Pvt. Ltd. ",
   description: "Premium chemical products and solutions",
   icons: {
     icon: "/favicon.ico"
