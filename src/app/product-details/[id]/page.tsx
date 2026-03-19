@@ -29,6 +29,41 @@ export default function ProductDetailsPage() {
         item.variant!.pvr_id === selectedVariant?.pvr_id
     ) || null;
 
+  const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [visibleReviews, setVisibleReviews] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [avgRating, setAvgRating] = useState(0);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
+  const REVIEWS_PER_PAGE = 5;
+
+  const fetchReviews = async () => {
+    try {
+      setLoadingReviews(true);
+
+      const res = await fetch(`/api/products/review?product_id=${id}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error);
+
+      setAllReviews(data.reviews || []);
+      setAvgRating(data.avg_rating || 0);
+      setPage(1);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  useEffect(() => {
+    const start = (page - 1) * REVIEWS_PER_PAGE;
+    const end = start + REVIEWS_PER_PAGE;
+
+    setVisibleReviews(allReviews.slice(start, end));
+  }, [allReviews, page]);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -50,6 +85,7 @@ export default function ProductDetailsPage() {
         } else {
           setSelectedImage(null);
         }
+        fetchReviews();
       } catch (err) {
         console.error(err);
       }
@@ -57,6 +93,23 @@ export default function ProductDetailsPage() {
 
     fetchProduct();
   }, [id]);
+
+  const totalPages = Math.ceil(allReviews.length / REVIEWS_PER_PAGE);
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <span
+            key={i}
+            className={i <= rating ? "text-yellow-400" : "text-gray-300"}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    );
+  };
 
   if (!mainProduct) return null;
 
@@ -228,6 +281,87 @@ export default function ProductDetailsPage() {
                   "Detailed description of the product goes here."}
               </p>
             </details>
+          </div>
+
+          <div className="mt-12 border-t border-white/20 pt-6">
+            <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+              Product Reviews
+            </h2>
+
+            {/* AVG RATING */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="text-4xl font-bold text-white">
+                {avgRating.toFixed(1)}
+              </div>
+              {renderStars(Math.round(avgRating))}
+            </div>
+
+            {/* REVIEWS LIST */}
+            {loadingReviews ? (
+              <p className="text-white">Loading reviews...</p>
+            ) : visibleReviews.length === 0 ? (
+              <p className="text-white">No reviews yet</p>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {visibleReviews.map((r) => (
+                  <div
+                    key={r.id}
+                    className="bg-white/10 p-4 rounded-xl border border-white/20"
+                  >
+                    {/* HEADER */}
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="text-white font-semibold">
+                        {r.user?.name || "Customer"}
+                      </div>
+
+                      <div className="text-xs text-gray-300">
+                        {new Date(r.created_at).toLocaleDateString("en-IN")}
+                      </div>
+                    </div>
+
+                    {/* VARIANT */}
+                    <div className="text-sm text-yellow-300 mb-1">
+                      {r.variant?.name}
+                    </div>
+
+                    {/* STARS */}
+                    {renderStars(r.rating)}
+
+                    {/* REVIEW */}
+                    <p className="text-white mt-2 text-sm">
+                      {r.review}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* PAGINATION */}
+            {
+              totalPages > 1 && (
+                <div className="flex justify-center gap-4 mt-6">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => p - 1)}
+                    className="px-4 py-1 bg-white/20 text-white rounded disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
+
+                  <span className="text-white">
+                    {page} / {totalPages}
+                  </span>
+
+                  <button
+                    disabled={page === totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-4 py-1 bg-white/20 text-white rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )
+            }
           </div>
         </div>
       </main>

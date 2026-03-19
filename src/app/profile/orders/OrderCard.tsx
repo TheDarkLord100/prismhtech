@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { notify, Notification } from "@/utils/notify";
 import { handleRetryPayment } from "@/utils/razorpay";
 import { useCartStore } from "@/utils/store/useCartStore";
+import ReviewModal from "@/components/ReviewModal";
 
 const comingSoon = () => {
     notify(
@@ -148,6 +149,11 @@ export default function OrderCard({ order }: { order: Order }) {
 
     const { reorderCart, loading: cartLoading } = useCartStore();
 
+    const productItems = order.items?.filter(
+        (item) => item.item_type === "product"
+    ) || [];
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [filteredItems, setFilteredItems] = useState<any[]>([]);
 
     const item = order.items?.[0];
 
@@ -280,7 +286,34 @@ export default function OrderCard({ order }: { order: Order }) {
                         </button>
 
                         <button
-                            onClick={comingSoon}
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch(
+                                        `/api/products/review/order?order_id=${order.id}`,
+                                        { credentials: "include" }
+                                    );
+
+                                    const items = await res.json();
+
+                                    if (!res.ok) {
+                                        throw new Error(items.error || "Failed to load items");
+                                    }
+
+                                    if (!items.length) {
+                                        notify(
+                                            Notification.INFO,
+                                            "You have already reviewed all products"
+                                        );
+                                        return;
+                                    }
+
+                                    setFilteredItems(items);
+                                    setShowReviewModal(true);
+
+                                } catch (e: any) {
+                                    notify(Notification.FAILURE, e.message);
+                                }
+                            }}
                             className="bg-white border-2 border-green-700 text-green-700 hover:bg-green-50 font-semibold py-1.5 px-8 rounded-full w-full lg:w-64 shadow-md text-sm">
                             Write a product review
                         </button>
@@ -332,7 +365,13 @@ export default function OrderCard({ order }: { order: Order }) {
                 </div>
             </div>
 
-
+            {showReviewModal && (
+                <ReviewModal
+                    order={order}
+                    items={filteredItems}
+                    onClose={() => setShowReviewModal(false)}
+                />
+            )}
         </div>
     );
 }
