@@ -62,6 +62,7 @@ export default function Footer() {
             </p>
             <p className="mt-3 text-sm">📞 0129-2414130, 2413279</p>
             <p className="mt-2 text-sm">✉️ vinod@perveshimpex.com</p>
+            <p className="mt-2 text-sm">© 2026 Pervesh Rasayan Pvt. Ltd. All Rights Reserved.</p>
           </div>
 
           {/* Products */}
