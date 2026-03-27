@@ -113,7 +113,7 @@ export default function AskQuestionPage() {
 
             /* 4️⃣ Redirect */
             notify(Notification.SUCCESS, "Question submitted successfully");
-            window.location.href = "/blogs";
+            window.location.href = "/forum";
 
         } catch (err: any) {
             notify(Notification.FAILURE, err.message || "Submission failed");

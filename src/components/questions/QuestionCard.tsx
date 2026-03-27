@@ -3,26 +3,19 @@
 import { useState } from "react";
 import { useUserStore } from "@/utils/store/userStore";
 import { Notification, notify } from "@/utils/notify";
+import { useRouter } from "next/navigation";
+import { Question } from "@/types/question";
 
 type QuestionCardProps = {
-  question: {
-    id: string;
-    title: string;
-    body: string;
-    created_at: string;
-    like_count: number;
-    has_answer: boolean;
-    answer?: string;
-    images?: string[];
-    is_liked?: boolean;
-  };
+  question: Question;
 };
 
 export default function QuestionCard({ question }: QuestionCardProps) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [likeCount, setLikeCount] = useState(question.like_count);
   const [liked, setLiked] = useState(question.is_liked);
-    console.log("question:", question); 
+  console.log("question:", question);
   const { user } = useUserStore();
 
   async function toggleLike(e: React.MouseEvent) {
@@ -48,7 +41,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
       {/* HEADER */}
       <div
         className="flex justify-between items-start cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => router.push(`/forum/${question.id}`)}
       >
         <div>
           <h3 className="text-lg font-semibold text-green-900">
@@ -63,16 +56,16 @@ export default function QuestionCard({ question }: QuestionCardProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={toggleLike}
-            className={`text-sm flex items-center gap-1 ${
-              liked ? "text-green-700" : "text-gray-600"
-            }`}
+            className={`text-sm flex items-center gap-1 ${liked ? "text-green-700" : "text-gray-600"
+              }`}
           >
             👍 {likeCount}
           </button>
 
-          {question.has_answer && (
+          {question.answers_count > 0 && (
             <span className="px-2 py-0.5 text-xs rounded-full bg-green-600 text-white">
-              Answered
+              {question.answers_count} Answer
+              {question.answers_count > 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -96,24 +89,6 @@ export default function QuestionCard({ question }: QuestionCardProps) {
       <p className="text-gray-700 mt-3 line-clamp-2">
         {question.body}
       </p>
-
-      {/* EXPANDED */}
-      {expanded && (
-        <div className="mt-4 border-t pt-4 space-y-3">
-          {question.answer ? (
-            <div className="bg-green-50 border-l-4 border-green-600 p-4 rounded">
-              <p className="font-semibold text-green-900 mb-1">
-                Official Answer
-              </p>
-              <p className="text-gray-800">{question.answer}</p>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 italic">
-              No answer yet
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

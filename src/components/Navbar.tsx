@@ -58,7 +58,7 @@ export default function Navbar({ type = "transparent" }: { type?: string }) {
             <div className="hidden md:flex items-center gap-16">
               <Link href="/">Home</Link>
               <Link href="/products">Products</Link>
-              <Link href="/blogs">Blogs</Link>
+              <Link href="/forum">Blogs</Link>
               <Link href="/about">About Us</Link>
               <Link href="/contact">Contact Us</Link>
             </div>
@@ -104,7 +104,7 @@ export default function Navbar({ type = "transparent" }: { type?: string }) {
           <nav className="flex flex-col items-center gap-8">
             <Link onClick={() => setOpen(false)} href="/" className="text-black text-2xl font-medium">Home</Link>
             <Link onClick={() => setOpen(false)} href="/products" className="text-black text-2xl font-medium">Products</Link>
-            <Link onClick={() => setOpen(false)} href="/blogs" className="text-black text-2xl font-medium">Blogs</Link>
+            <Link onClick={() => setOpen(false)} href="/forum" className="text-black text-2xl font-medium">Blogs</Link>
             <Link onClick={() => setOpen(false)} href="/about" className="text-black text-2xl font-medium">About Us</Link>
             <Link onClick={() => setOpen(false)} href="/contact" className="text-black text-2xl font-medium">Contact Us</Link>
 

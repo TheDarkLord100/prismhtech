@@ -17,16 +17,16 @@ export async function GET(req: Request) {
     const supabase = createClient(cookies());
 
     /* -------------------------------------------------- */
-    /* Current user (likes)                               */
+    /* Current user                                       */
     /* -------------------------------------------------- */
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     /* -------------------------------------------------- */
-    /* Fetch questions ONLY                               */
+    /* Fetch questions                                    */
     /* -------------------------------------------------- */
-    let questionQuery = supabase
+    let query = supabase
       .from("questions")
       .select(
         `
@@ -35,53 +35,39 @@ export async function GET(req: Request) {
         body,
         created_at,
         question_likes(user_id),
-        question_images(image_url)
+        question_images(image_url),
+        answers(count)
         `,
         { count: "exact" }
       )
       .eq("is_public", true);
+      // .eq("status", "approved");
 
+    /* ---------------- SEARCH ---------------- */
     if (search) {
-      questionQuery = questionQuery.or(
+      query = query.or(
         `title.ilike.%${search}%,body.ilike.%${search}%`
       );
     }
 
-    questionQuery =
+    /* ---------------- SORT ---------------- */
+    query =
       sort === "old"
-        ? questionQuery.order("created_at", { ascending: true })
-        : questionQuery.order("created_at", { ascending: false });
+        ? query.order("created_at", { ascending: true })
+        : query.order("created_at", { ascending: false });
 
-    questionQuery = questionQuery.range(offset, offset + limit - 1);
+    /* ---------------- PAGINATION ---------------- */
+    query = query.range(offset, offset + limit - 1);
 
-    const { data: questionsData, error, count } =
-      await questionQuery;
+    const { data, error, count } = await query;
 
     if (error) throw error;
-
-    const questionIds = questionsData.map(q => q.id);
-
-    /* -------------------------------------------------- */
-    /* Fetch answers separately                           */
-    /* -------------------------------------------------- */
-    const { data: answersData, error: answersError } =
-      await supabase
-        .from("answers")
-        .select("question_id, body, created_at")
-        .in("question_id", questionIds);
-
-    if (answersError) throw answersError;
-
-    const answersMap = new Map(
-      (answersData || []).map(a => [a.question_id, a])
-    );
 
     /* -------------------------------------------------- */
     /* Normalize response                                 */
     /* -------------------------------------------------- */
-    const questions = questionsData.map((q: any) => {
+    const questions = (data || []).map((q: any) => {
       const likes = q.question_likes || [];
-      const answer = answersMap.get(q.id);
 
       return {
         id: q.id,
@@ -89,14 +75,12 @@ export async function GET(req: Request) {
         body: q.body,
         created_at: q.created_at,
 
-        has_answer: !!answer,
-        answer: answer?.body || null,
-        answer_created_at: answer?.created_at || null,
-
         like_count: likes.length,
         is_liked: user
           ? likes.some((l: any) => l.user_id === user.id)
           : false,
+
+        answers_count: q.answers?.[0]?.count || 0,
 
         images: (q.question_images || []).map(
           (img: any) => img.image_url
@@ -104,12 +88,10 @@ export async function GET(req: Request) {
       };
     });
 
-    /* -------------------------------------------------- */
-    /* Optional: filter answered on server                */
-    /* -------------------------------------------------- */
+    /* ---------------- FILTER ---------------- */
     const finalQuestions =
       filter === "answered"
-        ? questions.filter(q => q.has_answer)
+        ? questions.filter(q => q.answers_count > 0)
         : questions;
 
     return NextResponse.json({
@@ -125,8 +107,6 @@ export async function GET(req: Request) {
     );
   }
 }
-
-
 
 
 export async function POST(req: Request) {

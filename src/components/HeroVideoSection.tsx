@@ -27,7 +27,7 @@ export default function HeroVideoSection() {
                             Pervesh Rasayan Pvt. Ltd.
                         </h3>
 
-                        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold italic text-yellow-400 drop-shadow-lg">
+                        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold italic text-[#16463B]-400 drop-shadow-lg">
                             The Chemistry of Lasting Value
                         </h1>
 
