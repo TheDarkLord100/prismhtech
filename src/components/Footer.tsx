@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaFacebookF, FaLinkedinIn, FaWhatsapp } from "react-icons/fa";
+import { FaFacebookF, FaLinkedinIn, FaWhatsapp, FaInstagram } from "react-icons/fa";
 
 type Category = {
   id: string;
@@ -105,8 +105,8 @@ export default function Footer() {
               <a href="#" className="hover:text-yellow-400">
                 <FaLinkedinIn />
               </a>
-              <a href="#" className="hover:text-yellow-400">
-                <FaWhatsapp />
+              <a href="https://www.instagram.com/perveshrasayan" target="_blank" className="hover:text-yellow-400">
+                <FaInstagram />
               </a>
             </div>
           </div>
