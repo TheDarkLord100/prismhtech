@@ -77,8 +77,6 @@ export async function POST(request: Request) {
             }
         }
 
-
-
         const SELLER_STATE = "Haryana";
         const GST_RATE = 0.18;
 
@@ -93,23 +91,22 @@ export async function POST(request: Request) {
 
         const totalAmount = subtotal + gstAmount;
 
-        const razorpay = new Razorpay({
-            key_id: process.env.NEXT_PUBLIC_RAZORYPAY_KEY || "",
-            key_secret: process.env.RAZORPAY_SECRET!
-        });
-        const options = {
-            amount: Math.round(totalAmount * 100),
-            currency: "INR",
-            receipt
-        };
+        // const razorpay = new Razorpay({
+        //     key_id: process.env.NEXT_PUBLIC_RAZORYPAY_KEY || "",
+        //     key_secret: process.env.RAZORPAY_SECRET!
+        // });
+        // const options = {
+        //     amount: Math.round(totalAmount * 100),
+        //     currency: "INR",
+        //     receipt
+        // };
 
-        const order = await razorpay.orders.create(options);
+        // const order = await razorpay.orders.create(options);
 
         const { data: orderData, error: orderError } = await supabase
             .from("Orders")
             .insert({
                 user_id: user.user.id,
-                razorpay_order_id: order.id,
 
                 subtotal_amount: subtotal,
                 gst_rate: 18,
@@ -121,17 +118,59 @@ export async function POST(request: Request) {
 
                 shipping_address_id: ship_adr_id,
                 billing_address_id: bill_adr_id,
-                payment_type: "Razorpay",
+                payment_type: "Cashfree",
                 status: "CREATED",
                 status_description: "Order created, awaiting payment",
             })
             .select()
             .single();
 
-
         if (orderError) {
             throw orderError;
         }
+
+        const cfRes = await fetch("https://api.cashfree.com/pg/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-client-id": process.env.NEXT_PUBLIC_CASHFREE_KEY!,
+                "x-client-secret": process.env.CASHFREE_SECRET!,
+                "x-api-version": "2022-09-01",
+            },
+            body: JSON.stringify({
+                order_id: orderData.id, // or use your DB id later (see note below)
+                order_amount: totalAmount,
+                order_currency: "INR",
+                customer_details: {
+                    customer_id: user.user.id,
+                    customer_email: user.user.email,
+                    customer_phone: user.user.phone || undefined,
+                },
+                order_meta: {
+                    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/payment-status?order_id={order_id}`,
+                },
+            }),
+        });
+
+        const cfData = await cfRes.json();
+
+        if (!cfRes.ok) {
+            console.error("Cashfree error:", cfData);
+            throw new Error("Failed to create Cashfree order");
+        }
+
+        const { error: updateError } = await supabase
+            .from("Orders")
+            .update({
+                gateway_order_id: cfData.order_id,
+            })
+            .eq("id", orderData.id);
+
+        if (updateError) {
+            throw updateError;
+        }
+
+
 
         const orderItems = cart_items.map((item: any) => {
             if (item.item_type === "product") {
@@ -161,7 +200,7 @@ export async function POST(request: Request) {
             throw itemsError;
         }
 
-        return NextResponse.json({ success: true, razorpay_order: order, order: orderData });
+        return NextResponse.json({ success: true, payment_session_id: cfData.payment_session_id, order: orderData });
     } catch (error) {
         console.log(error);
         return NextResponse.json(
