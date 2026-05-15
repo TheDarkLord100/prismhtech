@@ -11,6 +11,12 @@ export async function POST(request: Request) {
 
         const signatureHeader = request.headers.get("x-webhook-signature");
         const timestampHeader = request.headers.get("x-webhook-timestamp");
+        const headers: Record<string, string> = {};
+        request.headers.forEach((value, key) => {
+            headers[key] = value;
+        });
+        console.log("Webhook headers:", JSON.stringify(headers));
+        console.log("Webhook body:", rawBody);
 
         if (!signatureHeader || !timestampHeader) {
             return NextResponse.json(
