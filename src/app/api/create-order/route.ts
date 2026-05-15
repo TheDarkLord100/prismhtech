@@ -1,4 +1,3 @@
-import Razorpay from "razorpay";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
@@ -16,17 +15,25 @@ export async function POST(request: Request) {
         const { subtotal } = pricing;
 
         const supabase = createClient(cookies());
-        const { data: user, error: userError } = await supabase.auth.getUser();
+
+        /* ---------------- AUTH ---------------- */
+        const { data: user, error: userError } =
+            await supabase.auth.getUser();
 
         if (userError || !user) {
-            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json(
+                { success: false, error: "Unauthorized" },
+                { status: 401 }
+            );
         }
 
-        const { data: shippingAddress, error: addressError } = await supabase
-            .from("Addresses")
-            .select("state")
-            .eq("adr_id", ship_adr_id)
-            .single();
+        /* ---------------- FETCH SHIPPING ADDRESS ---------------- */
+        const { data: shippingAddress, error: addressError } =
+            await supabase
+                .from("Addresses")
+                .select("state")
+                .eq("adr_id", ship_adr_id)
+                .single();
 
         if (addressError || !shippingAddress?.state) {
             return NextResponse.json(
@@ -35,8 +42,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Checking if the metal prices are still valid or not
-
+        /* ---------------- METAL PRICE VALIDATION ---------------- */
         const metalItems = cart_items.filter(
             (item: any) => item.item_type === "metal"
         );
@@ -50,10 +56,12 @@ export async function POST(request: Request) {
             .gte("last_updated_at", `${today}T00:00:00`)
             .lte("last_updated_at", `${today}T23:59:59`);
 
-        if (metalError) throw metalError;
+        if (metalError) {
+            throw metalError;
+        }
 
         const liveMetalMap = new Map(
-            liveMetals.map(m => [m.id, m])
+            liveMetals.map((m) => [m.id, m])
         );
 
         for (const item of metalItems) {
@@ -61,7 +69,11 @@ export async function POST(request: Request) {
 
             if (!liveMetal) {
                 return NextResponse.json(
-                    { success: false, error: "Metal price has expired. Please remove the item from the cart and try again." },
+                    {
+                        success: false,
+                        error:
+                            "Metal price has expired. Please remove the item from the cart and try again.",
+                    },
                     { status: 400 }
                 );
             }
@@ -70,18 +82,21 @@ export async function POST(request: Request) {
                 return NextResponse.json(
                     {
                         success: false,
-                        error: `Price for metals has changed. Please remove the item from the cart and add it again.`,
+                        error:
+                            "Price for metals has changed. Please remove the item from the cart and add it again.",
                     },
                     { status: 400 }
                 );
             }
         }
 
+        /* ---------------- GST CALCULATION ---------------- */
         const SELLER_STATE = "Haryana";
         const GST_RATE = 0.18;
 
         const isIntraState =
-            shippingAddress.state.toLowerCase() === SELLER_STATE.toLowerCase();
+            shippingAddress.state.toLowerCase() ===
+            SELLER_STATE.toLowerCase();
 
         const gstAmount = subtotal * GST_RATE;
 
@@ -91,18 +106,7 @@ export async function POST(request: Request) {
 
         const totalAmount = subtotal + gstAmount;
 
-        // const razorpay = new Razorpay({
-        //     key_id: process.env.NEXT_PUBLIC_RAZORYPAY_KEY || "",
-        //     key_secret: process.env.RAZORPAY_SECRET!
-        // });
-        // const options = {
-        //     amount: Math.round(totalAmount * 100),
-        //     currency: "INR",
-        //     receipt
-        // };
-
-        // const order = await razorpay.orders.create(options);
-
+        /* ---------------- CREATE DB ORDER FIRST ---------------- */
         const { data: orderData, error: orderError } = await supabase
             .from("Orders")
             .insert({
@@ -118,47 +122,68 @@ export async function POST(request: Request) {
 
                 shipping_address_id: ship_adr_id,
                 billing_address_id: bill_adr_id,
+
                 payment_type: "Cashfree",
+                payment_status: "PENDING",
+
                 status: "CREATED",
-                status_description: "Order created, awaiting payment",
+                status_description:
+                    "Order created, awaiting payment",
             })
             .select()
             .single();
 
-        if (orderError) {
+        if (orderError || !orderData) {
             throw orderError;
         }
 
-        const cfRes = await fetch("https://api.cashfree.com/pg/orders", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-client-id": process.env.NEXT_PUBLIC_CASHFREE_KEY!,
-                "x-client-secret": process.env.CASHFREE_SECRET!,
-                "x-api-version": "2022-09-01",
-            },
-            body: JSON.stringify({
-                order_id: orderData.id, // or use your DB id later (see note below)
-                order_amount: totalAmount,
-                order_currency: "INR",
-                customer_details: {
-                    customer_id: user.user.id,
-                    customer_email: user.user.email,
-                    customer_phone: user.user.phone || undefined,
+        /* ---------------- CREATE CASHFREE ORDER ---------------- */
+        const cfRes = await fetch(
+            "https://sandbox.cashfree.com/pg/orders",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-client-id": process.env.NEXT_PUBLIC_CASHFREE_KEY!,
+                    "x-client-secret":
+                        process.env.CASHFREE_SECRET!,
+                    "x-api-version": "2022-09-01",
                 },
-                order_meta: {
-                    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/payment-status?order_id={order_id}`,
-                },
-            }),
-        });
+                body: JSON.stringify({
+                    order_id: orderData.id,
+                    order_amount: totalAmount,
+                    order_currency: "INR",
+
+                    customer_details: {
+                        customer_id: user.user.id,
+                        customer_email: user.user.email,
+                        customer_phone: "9999999999",
+                    },
+
+                    order_meta: {
+                        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order?order_id=${orderData.id}`,
+                    },
+                }),
+            }
+        );
 
         const cfData = await cfRes.json();
 
+        console.log("Cashfree response:", cfData);
+
         if (!cfRes.ok) {
             console.error("Cashfree error:", cfData);
+
+            // Optional cleanup
+            await supabase
+                .from("Orders")
+                .delete()
+                .eq("id", orderData.id);
+
             throw new Error("Failed to create Cashfree order");
         }
 
+        /* ---------------- UPDATE ORDER WITH GATEWAY ORDER ID ---------------- */
         const { error: updateError } = await supabase
             .from("Orders")
             .update({
@@ -170,8 +195,7 @@ export async function POST(request: Request) {
             throw updateError;
         }
 
-
-
+        /* ---------------- INSERT ORDER ITEMS ---------------- */
         const orderItems = cart_items.map((item: any) => {
             if (item.item_type === "product") {
                 return {
@@ -183,13 +207,14 @@ export async function POST(request: Request) {
                     price: item.price,
                 };
             }
+
             return {
                 item_type: "metal",
                 metal_id: item.metal_id,
                 ordr_id: orderData.id,
                 quantity: item.quantity,
                 price: item.price,
-            }
+            };
         });
 
         const { error: itemsError } = await supabase
@@ -200,12 +225,22 @@ export async function POST(request: Request) {
             throw itemsError;
         }
 
-        return NextResponse.json({ success: true, payment_session_id: cfData.payment_session_id, order: orderData });
+        /* ---------------- RESPONSE ---------------- */
+        return NextResponse.json({
+            success: true,
+            order: orderData,
+            payment_session_id: cfData.payment_session_id,
+        });
+
     } catch (error) {
-        console.log(error);
+        console.error("Create order error:", error);
+
         return NextResponse.json(
-            { success: false, error: "Failed to create order" },
+            {
+                success: false,
+                error: "Failed to create order",
+            },
             { status: 500 }
-        )
+        );
     }
 }

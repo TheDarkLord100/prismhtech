@@ -1,4 +1,9 @@
 import { Notification, notify } from "./notify";
+import { load } from "@cashfreepayments/cashfree-js";
+
+async function getCashfree() {
+  return await load({ mode: "sandbox" });
+}
 
 export async function handleProceedToPayment({
   selectedDeliveryId,
@@ -36,110 +41,82 @@ export async function handleProceedToPayment({
     return;
   }
 
-  // Razorpay Script Loader
-  const loadRazorpay = () =>
-    new Promise((resolve) => {
-      if (document.getElementById("razorpay-sdk")) return resolve(true);
-
-      const script = document.createElement("script");
-      script.id = "razorpay-sdk";
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
+  try {
+    const cartItems = cart.items.map((item: any) => {
+      if (item.item_type === "product") {
+        return {
+          item_type: "product",
+          product_id: item.product_id,
+          variant_id: item.variant.pvr_id,
+          quantity: item.quantity,
+          price: item.variant.price,
+        };
+      }
+      return {
+        item_type: "metal",
+        metal_id: item.metal_id,
+        quantity: item.quantity,
+        price: item.unit_price,
+      }
     });
 
-  const loaded = await loadRazorpay();
-  if (!loaded) {
-    notify(Notification.FAILURE, "Failed to load Razorpay SDK. Try again.");
-    return;
-  }
+    const res = await fetch("/api/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        pricing: {
+          subtotal,
+          gst,
+          total: totalAmount,
+        },
+        receipt: `rcpt_${Date.now()}`,
+        ship_adr_id: selectedDeliveryId,
+        bill_adr_id: sameAsDelivery ? selectedDeliveryId : selectedBillingId,
+        cart_items: cartItems,
+      }),
+    });
 
-  const cartItems = cart.items.map((item: any) => {
-    if (item.item_type === "product") {
-      return {
-        item_type: "product",
-        product_id: item.product_id,
-        variant_id: item.variant.pvr_id,
-        quantity: item.quantity,
-        price: item.variant.price,
-      };
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+
+      notify(
+        Notification.FAILURE,
+        data.error || "Failed to create order"
+      );
+
+      return;
     }
-    return {
-      item_type: "metal",
-      metal_id: item.metal_id,
-      quantity: item.quantity,
-      price: item.unit_price,
+
+    const { payment_session_id } = data;
+
+    if (!payment_session_id) {
+      notify(
+        Notification.FAILURE,
+        "Failed to initiate payment session"
+      );
+      return;
     }
-  });
 
-  const res = await fetch("/api/create-order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({
-      pricing: {
-        subtotal,
-        gst,
-        total: totalAmount,
-      },
-      receipt: `rcpt_${Date.now()}`,
-      ship_adr_id: selectedDeliveryId,
-      bill_adr_id: sameAsDelivery ? selectedDeliveryId : selectedBillingId,
-      cart_items: cartItems,
-    }),
-  });
+    // await clearCart({ invisible: true });
 
-  const data = await res.json();
+    const cashfree = await getCashfree();
 
-  if (!data.success) {
-    notify(Notification.FAILURE, "Failed to create order: " + data.error);
+    cashfree.checkout({
+      paymentSessionId: payment_session_id,
+      redirectTarget: "_self",
+    });
+
+  } catch (error: any) {
+
+    console.error(error);
+
+    notify(
+      Notification.FAILURE,
+      error?.message || "Something went wrong"
+    );
   }
-
-  const razorpayOrder = data.razorpay_order;
-  const orderId = data.order.id;
-
-  const options = {
-    key: process.env.NEXT_PUBLIC_RAZORYPAY_KEY!,
-    amount: razorpayOrder.amount,
-    currency: "INR",
-    name: "Pervesh Rasayan Pvt. Ltd.",
-    description: "Order Id: " + orderId,
-    order_id: razorpayOrder.id,
-
-    handler: async function (response: any) {
-      const verifyRes = await fetch("/api/verify-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          razorpay_order_id: razorpayOrder.id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-          order_id: orderId,
-          transaction_id: response.razorpay_payment_id,
-        }),
-      });
-
-      const verifyData = await verifyRes.json();
-
-      if (verifyData.success) {
-        await clearCart({ invisible: true });
-        window.location.href = `/order?order_id=${orderId}`;
-      } else {
-        notify(Notification.FAILURE, "Payment verification failed: " + verifyData.error);
-      }
-    },
-    prefill: {
-      name: user?.name,
-      email: user?.email,
-      contact: user?.phone,
-    },
-    theme: { color: "#3399cc" },
-  };
-
-  const rzp = new (window as any).Razorpay(options);
-  rzp.open();
 }
 
 export async function handleRetryPayment({
@@ -165,7 +142,7 @@ export async function handleRetryPayment({
     notify(Notification.FAILURE, "Failed to load Razorpay SDK. Try again.");
     return;
   }
-  
+
   const res = await fetch("/api/order/retry", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
