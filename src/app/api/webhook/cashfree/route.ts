@@ -19,10 +19,10 @@ export async function POST(request: Request) {
         console.log("Webhook body:", rawBody);
 
         if (!signatureHeader || !timestampHeader) {
-            return NextResponse.json(
-                { success: false, error: "Missing webhook headers" },
-                { status: 400 }
-            );
+            // Not a payment webhook (e.g. LOW_BALANCE_ALERT test ping)
+            // Return 200 so Cashfree doesn't flag the URL as broken
+            console.log("Non-payment webhook received, ignoring:", JSON.parse(rawBody)?.event);
+            return NextResponse.json({ success: true }, { status: 200 });
         }
 
         /* ---------------- VERIFY SIGNATURE ---------------- */
