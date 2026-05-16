@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
+import { notify } from "@/utils/notify";
 
 export async function POST(request: Request) {
     try {
@@ -162,6 +163,7 @@ export async function POST(request: Request) {
 
                     order_meta: {
                         return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order?order_id=${orderData.id}`,
+                        notify_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook/cashfree`,
                     },
                 }),
             }
