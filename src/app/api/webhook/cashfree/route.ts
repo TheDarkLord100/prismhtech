@@ -9,6 +9,11 @@ export async function POST(request: Request) {
 
         const signatureHeader = request.headers.get("x-webhook-signature");
         const timestampHeader = request.headers.get("x-webhook-timestamp");
+        console.log("Body:", rawBody);
+        console.log("Headers:", {
+            signature: signatureHeader,
+            timestamp: timestampHeader,
+        });
 
         /* ---------------- IGNORE NON-PAYMENT PINGS ---------------- */
         if (!signatureHeader || !timestampHeader) {
@@ -43,6 +48,8 @@ export async function POST(request: Request) {
 
         const payment = event.data?.payment;
         const order = event.data?.order;
+
+        console.log("Event data", event.data);
 
         if (!payment || !order) {
             console.log("No payment/order in payload, ignoring");
