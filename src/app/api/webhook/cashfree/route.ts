@@ -41,11 +41,7 @@ export async function POST(request: Request) {
 
         console.log("Cashfree webhook event:", eventType);
 
-        /* ---------------- IGNORE NON-PAYMENT EVENTS ---------------- */
-        if (!eventType || eventType === "WEBHOOK") {
-            return NextResponse.json({ success: true });
-        }
-
+        
         const payment = event.data?.payment;
         const order = event.data?.order;
 
@@ -56,7 +52,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true });
         }
 
-        const gatewayOrderId = order.order_id;
+        const order_id = order.order_id;
         const paymentId = String(payment.cf_payment_id);
 
         const supabase = createAdminSupabaseClient();
@@ -65,18 +61,18 @@ export async function POST(request: Request) {
         const { data: dbOrder, error: orderError } = await supabase
             .from("Orders")
             .select("*")
-            .eq("gateway_order_id", gatewayOrderId)
+            .eq("id", order_id)
             .single();
 
         if (orderError || !dbOrder) {
-            console.error("Order not found for gateway_order_id:", gatewayOrderId);
+            console.error("Order not found for order_id:", order_id);
             return NextResponse.json({ success: true }); // 200 so Cashfree doesn't retry
         }
 
         /* =====================================================
            PAYMENT_SUCCESS  (2023-08-01 event name)
         ===================================================== */
-        if (eventType === "PAYMENT_SUCCESS") {
+        if (eventType === "PAYMENT_SUCCESS_WEBHOOK") {
 
             /* --- idempotency: skip if payment already recorded --- */
             const { data: existingPayment } = await supabase
@@ -91,7 +87,7 @@ export async function POST(request: Request) {
                     .insert({
                         order_id: dbOrder.id,
                         payment_id: paymentId,
-                        transaction_id: payment.payment_group ?? paymentId,
+                        transaction_id: paymentId,
                         amount: payment.payment_amount,
                         currency: payment.payment_currency ?? "INR",
                         method: payment.payment_method
@@ -144,7 +140,7 @@ export async function POST(request: Request) {
         /* =====================================================
            PAYMENT_FAILED  (2023-08-01 event name)
         ===================================================== */
-        if (eventType === "PAYMENT_FAILED") {
+        if (eventType === "PAYMENT_FAILED_WEBHOOK") {
 
             const { data: existingPayment } = await supabase
                 .from("payments")
