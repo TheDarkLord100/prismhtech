@@ -163,7 +163,7 @@ export async function POST(request: Request) {
 
                     order_meta: {
                         return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order?order_id=${orderData.id}`,
-                        notify_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook/cashfree`,
+                        notify_url: `https://www.perveshrasayan.com/api/webhook/cashfree`,
                     },
                 }),
             }
