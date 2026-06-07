@@ -51,10 +51,6 @@ export default function AboutPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-yellow-400 mb-4">
             Legacy of <span className="italic">Pervesh Rasayan</span>
           </h2>
-          <p className="text-gray-200 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc
-            odio in et, lectus sit lorem id integer.
-          </p>
         </div>
 
         {/* Body Text Part */}
@@ -91,9 +87,11 @@ export default function AboutPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-yellow-400 mb-4">
             A few of the products we offer
           </h2>
-          <p className="text-gray-200 max-w-2xl mx-auto text-sm md:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc
-            odio in et, lectus sit lorem id integer.
+          <p className="text-gray-200 mx-20 text-sm md:text-base">
+            For over four decades, Pervesh Rasayan has been supplying high-quality industrial
+            and specialty chemicals trusted by businesses across electroplating, metal finishing,
+            water treatment, and manufacturing industries. Our carefully sourced products ensure reliability,
+            consistency, and performance for every application.
           </p>
         </div>
 
@@ -104,10 +102,13 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row bg-[#0B3D2E] rounded-xl overflow-hidden shadow-xl min-h-[280px]">
             <div className="flex-1 p-8 flex flex-col justify-center">
               <h3 className="text-xl font-bold text-white mb-3 leading-tight">
-                Б/у запчасти для грузовых авто из Европы
+                Electroplating Chemicals
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
+                High-performance electroplating chemicals designed for superior
+                metal finishing, corrosion resistance, and industrial durability.
+                We supply reliable solutions trusted by manufacturers and plating
+                units across industries.
               </p>
             </div>
             <div className="flex-1 relative min-h-[200px]">
@@ -124,11 +125,12 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row bg-[#0B3D2E] rounded-xl overflow-hidden shadow-xl min-h-[280px]">
             <div className="flex-1 p-8 flex flex-col justify-center">
               <h3 className="text-xl font-bold text-white mb-3 leading-tight">
-                Автомойка грузовых и легковых авто
+                Laboratory Reagents & Specialty Chemicals
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
-              </p>
+                Premium-grade laboratory reagents and specialty chemicals suitable
+                for industrial processing, testing, and technical applications.
+                Sourced from trusted manufacturers to ensure quality and consistency.              </p>
             </div>
             <div className="flex-1 relative min-h-[200px]">
               <Image
@@ -144,10 +146,12 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row bg-[#0B3D2E] rounded-xl overflow-hidden shadow-xl min-h-[280px]">
             <div className="flex-1 p-8 flex flex-col justify-center">
               <h3 className="text-xl font-bold text-white mb-3 leading-tight">
-                Магазин аксессуаров
+                Water Treatment & Testing Solutions
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
+                Comprehensive water treatment chemicals and testing solutions for industrial
+                plants, cooling towers, and process industries. Engineered to maintain efficiency,
+                safety, and operational performance.
               </p>
             </div>
             <div className="flex-1 relative min-h-[200px]">
@@ -164,10 +168,12 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row bg-[#0B3D2E] rounded-xl overflow-hidden shadow-xl min-h-[280px]">
             <div className="flex-1 p-8 flex flex-col justify-center">
               <h3 className="text-xl font-bold text-white mb-3 leading-tight">
-                Пункт замены масла легковых авто
+                Industrial Metals & Raw Materials
               </h3>
               <p className="text-gray-300 text-sm leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
+                Supplying high-quality industrial metals including zinc, nickel, copper, tin,
+                and allied raw materials for electroplating, manufacturing, and engineering
+                applications with dependable sourcing and timely delivery.
               </p>
             </div>
             <div className="flex-1 relative min-h-[200px]">
@@ -179,7 +185,7 @@ export default function AboutPage() {
               />
             </div>
           </div>
-
+    
         </div>
       </section>
 
