@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import GlobalProvider from "@/Providers/GlobalProvider";
@@ -41,6 +42,14 @@ export default function RootLayout({
             <CartNotifier />
             {children}
           </GlobalProvider>
+          <Script
+            src="https://cdn.botpress.cloud/webchat/v3.7/inject.js"
+            strategy="afterInteractive"
+          />
+          <Script
+            src="https://files.bpcontent.cloud/2026/08/20/17/20260820172635-2I83AB7Z.js"
+            strategy="afterInteractive"
+          />
       </body>
     </html>
   );
