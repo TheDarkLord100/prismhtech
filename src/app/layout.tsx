@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import GlobalProvider from "@/Providers/GlobalProvider";
 import CartNotifier from "@/utils/cartUtils/CartNotifier";
+import Chatbot from "@/components/Chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
             <Toaster position="top-right" />
             <CartNotifier />
             {children}
+            <Chatbot />
           </GlobalProvider>
       </body>
     </html>

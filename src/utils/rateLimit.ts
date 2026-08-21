@@ -11,3 +11,9 @@ export const contactRateLimit = new Ratelimit({
   limiter: Ratelimit.fixedWindow(2, "1 h"), 
   analytics: false,
 });
+
+export const chatRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(30, "1 h"),
+  analytics: false,
+});

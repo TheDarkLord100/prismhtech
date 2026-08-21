@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@cashfreepayments/cashfree-js": "^1.0.7",
+    "@google/genai": "^2.18.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
     "@upstash/ratelimit": "^2.0.7",
@@ -18,6 +19,7 @@
     "lucide-react": "^0.541.0",
     "next": "15.4.10",
     "nodemailer": "^7.0.12",
+    "openai": "^6.49.0",
     "razorpay": "^2.9.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
