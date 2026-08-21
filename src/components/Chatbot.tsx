@@ -1,7 +1,34 @@
 "use client";
 
 import { FormEvent, Fragment, ReactNode, useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X, Bot, User } from "lucide-react";
+import Image from "next/image";
+import { Send, X, User } from "lucide-react";
+
+const CHATBOT_LOGO = "/Assets/chatbot_logo.png";
+
+function ChatbotAvatar({
+  size = 24,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex shrink-0 overflow-hidden rounded-full ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <Image
+        src={CHATBOT_LOGO}
+        alt="Pervesh Assistant"
+        width={size}
+        height={size}
+        unoptimized
+        className="h-full w-full object-contain"
+      />
+    </span>
+  );
+}
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -165,9 +192,7 @@ export default function Chatbot() {
         <div className="flex h-[min(560px,75vh)] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-gradient-to-r from-[#16463B] via-[#317A45] to-[#4CAF50] px-4 py-3 text-white">
             <div className="flex items-center gap-2">
-              <div className="rounded-full bg-white/15 p-1.5">
-                <Bot size={18} />
-              </div>
+              <ChatbotAvatar size={32} className="ring-2 ring-white/30" />
               <div>
                 <p className="text-sm font-semibold leading-tight">
                   Pervesh Assistant
@@ -192,9 +217,7 @@ export default function Chatbot() {
                 className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {m.role === "assistant" && (
-                  <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#317A45] text-white">
-                    <Bot size={14} />
-                  </div>
+                  <ChatbotAvatar size={24} className="mt-0.5" />
                 )}
                 <div
                   className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
@@ -215,9 +238,7 @@ export default function Chatbot() {
 
             {loading && (
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#317A45] text-white">
-                  <Bot size={14} />
-                </div>
+                <ChatbotAvatar size={24} />
                 <span className="rounded-2xl bg-white px-3 py-2 shadow-sm">
                   Thinking…
                 </span>
@@ -258,10 +279,17 @@ export default function Chatbot() {
         type="button"
         aria-label={open ? "Close chat" : "Open chat"}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#16463B] to-[#4CAF50] text-white shadow-lg transition hover:scale-105"
+        className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full shadow-lg transition hover:scale-105"
       >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
+        {open ? (
+          <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#16463B] to-[#4CAF50] text-white">
+            <X size={22} />
+          </span>
+        ) : (
+          <ChatbotAvatar size={56} />
+        )}
       </button>
     </div>
   );
 }
+
