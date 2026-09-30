@@ -198,14 +198,12 @@ export default function AboutPage() {
               The companies we have been working with for decades
             </h2>
             <div className="space-y-4 text-gray-200 text-sm md:text-base leading-relaxed">
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
-              </p>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
-              </p>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc odio in et, lectus sit lorem id integer.
+             <p className="text-gray-300 text-sm leading-relaxed">
+                Our long-standing partnerships with leading manufacturers and industry partners 
+                are a testament to the trust and reliability we have built over the decades. 
+                Through strong relationships, consistent service, and a shared commitment to quality, 
+                we have worked alongside many valued companies for years—growing together and creating 
+                a dependable chemical supply chain for our customers.
               </p>
             </div>
           </div>
